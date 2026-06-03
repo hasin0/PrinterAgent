@@ -4,3 +4,15 @@ PrinterAgent/
 ├─ static/
 │  └─ index.html
 └─ downloads/                         # optional (if you want to persist scripts)
+
+
+
+
+python -m pip install pyinstaller
+pyinstaller --onefile configure_printer.py
+
+
+
+Then in your BAT:
+Plain Textbatch isn’t fully supported. Syntax highlighting is based on Plain Text.configure_printer.exe "Sharp BP-50C36" "agentic ai" "21342"Show more lines
+👉 User doesn't need Python installed ✅

@@ -30,35 +30,41 @@ def register(req: RequestModel):
 
     return {
         "message": result,
-        "download": "/api/installer?ip=" + printer_ip + "&name=" + printer_name
+        "download": "/api/installer?ip=" + printer_ip + "&name=" + printer_name + "&user=" + req.name + "&code=" + req.user_number
     }
 
 
 @app.get("/api/installer")
-def installer(ip: str, name: str):
+def installer(ip: str, name: str, user: str = "", code: str = ""):
 
-    script = get_installer_script(ip, name)
+    script = get_installer_script(ip, name, user, code)
 
     headers = {"Content-Disposition": "attachment; filename=install_printer.bat"}
 
     return Response(content=script, media_type="application/octet-stream", headers=headers)
 
 
-def get_installer_script(ip, name):
+def get_installer_script(ip, name, user, code):
 
     lines = []
 
+    # ================================
     # Header
+    # ================================
     lines.append("@echo off")
     lines.append("echo ============================================")
     lines.append("echo   Sharp Printer Auto Installer")
     lines.append("echo   Printer: " + name)
     lines.append("echo   IP: " + ip)
+    lines.append("echo   User: " + user)
+    lines.append("echo   Code: " + code)
     lines.append("echo ============================================")
     lines.append("echo.")
     lines.append("")
 
+    # ================================
     # Step 1 — Check if driver already installed
+    # ================================
     lines.append(":: Step 1 - Check existing driver")
     lines.append("echo Checking if Sharp driver is already installed...")
     lines.append("powershell -Command \"$d = (Get-PrinterDriver | Where-Object { $_.Name -like '*Sharp*' } | Select-Object -First 1).Name; if ($d) { echo DRIVER_EXISTS } else { echo DRIVER_MISSING }\" > \"%TEMP%\\driver_check.txt\"")
@@ -70,7 +76,9 @@ def get_installer_script(ip, name):
     lines.append("echo Driver not found - will install now")
     lines.append("")
 
+    # ================================
     # Step 2 — Download driver
+    # ================================
     lines.append(":: Step 2 - Download driver")
     lines.append("echo Downloading driver...")
     lines.append("powershell -Command \"Invoke-WebRequest -Uri 'http://127.0.0.1:8000/drivers/SH_D20_PCL6_PS_2508a_EnglishUS_64bit.exe' -OutFile '%TEMP%\\sharp_driver.exe'\"")
@@ -83,7 +91,9 @@ def get_installer_script(ip, name):
     lines.append("echo Driver downloaded OK")
     lines.append("")
 
-    # Step 3 — Try silent extract + INF install first
+    # ================================
+    # Step 3 — Try silent extract + INF install
+    # ================================
     lines.append(":: Step 3 - Try silent install first")
     lines.append("echo Attempting silent driver install...")
     lines.append("mkdir \"%TEMP%\\sharp_extracted\" 2>nul")
@@ -99,7 +109,9 @@ def get_installer_script(ip, name):
     lines.append(")")
     lines.append("")
 
+    # ================================
     # Step 4 — Fallback: guided wizard
+    # ================================
     lines.append(":: Step 4 - Fallback: open wizard with instructions")
     lines.append("echo.")
     lines.append("echo ============================================")
@@ -118,13 +130,13 @@ def get_installer_script(ip, name):
     lines.append("echo Driver installed via wizard OK")
     lines.append("")
 
+    # ================================
     # Step 5 — Wait for Print Spooler
+    # ================================
     lines.append(":WAIT_SPOOLER")
     lines.append("echo.")
     lines.append("echo Waiting for Print Spooler service...")
     lines.append("timeout /t 10 /nobreak >nul")
-    lines.append("")
-    lines.append(":: Restart spooler to be safe")
     lines.append("net stop spooler >nul 2>&1")
     lines.append("timeout /t 3 /nobreak >nul")
     lines.append("net start spooler >nul 2>&1")
@@ -132,7 +144,9 @@ def get_installer_script(ip, name):
     lines.append("echo Print Spooler is ready")
     lines.append("")
 
+    # ================================
     # Step 6 — Add printer
+    # ================================
     lines.append(":ADD_PRINTER")
     lines.append("echo.")
     lines.append("echo Configuring printer...")
@@ -159,15 +173,62 @@ def get_installer_script(ip, name):
 
     # Set as default printer
     lines.append(":: Set as default printer")
-    lines.append("powershell -Command \"(Get-WmiObject -Query \\\"SELECT * FROM Win32_Printer WHERE Name='" + name + "'\\\").SetDefaultPrinter()\"")
+    lines.append("powershell -Command \"(Get-WmiObject -Query \\\"SELECT * FROM Win32_Printer WHERE Name='" + name + "'\\\").SetDefaultPrinter() | Out-Null\"")
     lines.append("echo Default printer set")
     lines.append("")
 
-    # Done
+    # ================================
+    # Step 7 — Configure preferences (pywinauto)
+    # ================================
+    lines.append(":: Step 7 - Auto-configure printer preferences")
+    lines.append("echo.")
+    lines.append("echo Configuring printer preferences...")
+    lines.append("")
+    lines.append("python printer_config.py \"" + name + "\" \"" + user + "\" \"" + code + "\"")
+    lines.append("")
+    lines.append("if %errorlevel%==0 (")
+    lines.append("    echo Preferences configured automatically")
+    lines.append("    goto DONE")
+    lines.append(")")
+    lines.append("")
+
+    # ================================
+    # Step 8 — Fallback: manual config (if pywinauto fails)
+    # ================================
+    lines.append(":: Step 8 - Fallback: manual configuration")
     lines.append("echo.")
     lines.append("echo ============================================")
-    lines.append("echo   SUCCESS: Printer " + name + " installed!")
+    lines.append("echo   AUTO-CONFIG FAILED - Manual Setup Needed")
+    lines.append("echo ============================================")
+    lines.append("echo.")
+    lines.append("echo   Printer Preferences will open now.")
+    lines.append("echo   Go to the 'Job Handling' tab:")
+    lines.append("echo.")
+    lines.append("echo   1. Change Authentication to 'User Number'")
+    lines.append("echo   2. Check 'User Name' checkbox")
+    lines.append("echo   3. Enter: " + user)
+    lines.append("echo   4. Click 'Apply'")
+    lines.append("echo   5. Click 'OK'")
+    lines.append("echo.")
+    lines.append("echo ============================================")
+    lines.append("echo.")
+    lines.append("echo Press any key to open Printer Preferences...")
+    lines.append("pause >nul")
+    lines.append("rundll32 printui.dll,PrintUIEntry /e /n \"" + name + "\"")
+    lines.append("")
+
+    # ================================
+    # Done
+    # ================================
+    lines.append(":DONE")
+    lines.append("echo.")
+    lines.append("echo ============================================")
+    lines.append("echo   INSTALLATION COMPLETE!")
+    lines.append("echo.")
+    lines.append("echo   Printer: " + name)
     lines.append("echo   IP: " + ip)
+    lines.append("echo   User: " + user)
+    lines.append("echo   Code: " + code)
     lines.append("echo   Status: Ready to print")
     lines.append("echo ============================================")
     lines.append("echo.")
@@ -176,6 +237,8 @@ def get_installer_script(ip, name):
     return "\r\n".join(lines)
 
 
+# ================================
 # Mount static - drivers FIRST then UI
+# ================================
 app.mount("/drivers", StaticFiles(directory="static/drivers"), name="drivers")
 app.mount("/", StaticFiles(directory="static", html=True), name="static")

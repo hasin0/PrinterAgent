@@ -1,41 +1,73 @@
 <!DOCTYPE html>
 <html>
+<head>
+    <title>Printer Access Portal</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial; background: #f5f5f5; padding: 40px; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h2 { margin-bottom: 20px; color: #333; }
+        label { display: block; margin-top: 15px; font-weight: bold; color: #555; }
+        input { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 6px; }
+        button { width: 100%; padding: 14px; margin-top: 20px; background: #0067b8; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #005a9e; }
+        .result { margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 6px; white-space: pre-wrap; display: none; }
+        .download { display: none; margin-top: 15px; padding: 14px; background: #111; color: white; text-align: center; text-decoration: none; border-radius: 6px; }
+        .download:hover { background: #333; }
+        .footer { margin-top: 20px; text-align: center; color: #999; font-size: 12px; }
+    </style>
+</head>
 <body>
 
-<h2>Printer Request</h2>
+<div class="container">
+    <h2>Printer Access Portal</h2>
+    <p>Dangote Petroleum Refinery - IT Self-Service</p>
 
-<input id="name" placeholder="Name"><br><br>
-<input id="code" placeholder="Code (5-8 digits)"><br><br>
-<input id="email" placeholder="Email"><br><br>
+    <label>Full Name</label>
+    <input id="name" placeholder="e.g. Hassan Abdulmalik">
 
-<button onclick="submit()">Submit</button>
+    <label>User Code (5-8 digits)</label>
+    <input id="code" placeholder="e.g. 34451">
 
-<p id="result"></p>
+    <label>Email</label>
+    <input id="email" placeholder="e.g. hassan@dangote.com">
 
-<a id="download" style="display:none;"></a>
+    <button onclick="submit()">Request Printer Access</button>
+
+    <div class="result" id="result"></div>
+
+    <a class="download" id="download"></a>
+
+    <div class="footer">
+        <p>Sharp Printer Agent v1.0</p>
+        <p>Built by Hassan Abdulmalik</p>
+    </div>
+</div>
 
 <script>
 async function submit(){
 
-  let res = await fetch("/api/register", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
-      location: "E-block",
-      name: document.getElementById("name").value,
-      user_number: document.getElementById("code").value,
-      email: document.getElementById("email").value
-    })
-  });
+    let res = await fetch("/api/register", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({
+            location: "E-block",
+            name: document.getElementById("name").value,
+            user_number: document.getElementById("code").value,
+            email: document.getElementById("email").value
+        })
+    });
 
-  let data = await res.json();
+    let data = await res.json();
 
-  document.getElementById("result").innerText = data.message;
+    let resultDiv = document.getElementById("result");
+    resultDiv.innerText = data.message;
+    resultDiv.style.display = "block";
 
-  let link = document.getElementById("download");
-  link.href = data.download;
-  link.innerText = "Download Installer";
-  link.style.display = "block";
+    let link = document.getElementById("download");
+    link.href = data.download;
+    link.innerText = "Download Printer Installer";
+    link.style.display = "block";
 }
 </script>
 
