@@ -1,0 +1,6 @@
+PrinterAgent/
+├─ app.py
+├─ sharp_web_register.py              # your working tool (register_user_on_sharp)
+├─ static/
+│  └─ index.html
+└─ downloads/                         # optional (if you want to persist scripts)

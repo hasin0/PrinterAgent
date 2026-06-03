@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>Printer Request</h2>
+
+<input id="name" placeholder="Name"><br><br>
+<input id="code" placeholder="Code (5-8 digits)"><br><br>
+<input id="email" placeholder="Email"><br><br>
+
+<button onclick="submit()">Submit</button>
+
+<p id="result"></p>
+
+<a id="download" style="display:none;"></a>
+
+<script>
+async function submit(){
+
+  let res = await fetch("/api/register", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      location: "E-block",
+      name: document.getElementById("name").value,
+      user_number: document.getElementById("code").value,
+      email: document.getElementById("email").value
+    })
+  });
+
+  let data = await res.json();
+
+  document.getElementById("result").innerText = data.message;
+
+  let link = document.getElementById("download");
+  link.href = data.download;
+  link.innerText = "Download Installer";
+  link.style.display = "block";
+}
+</script>
+
+</body>
+</html>
