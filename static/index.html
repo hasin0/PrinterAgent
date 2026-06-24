@@ -2,26 +2,134 @@
 <html>
 <head>
     <title>Printer Access Portal</title>
+
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial; background: #f5f5f5; padding: 40px; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h2 { margin-bottom: 20px; color: #333; }
-        label { display: block; margin-top: 15px; font-weight: bold; color: #555; }
-        input { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 6px; }
-        button { width: 100%; padding: 14px; margin-top: 20px; background: #0067b8; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; }
-        button:hover { background: #005a9e; }
-        .result { margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 6px; white-space: pre-wrap; display: none; }
-        .download { display: none; margin-top: 15px; padding: 14px; background: #111; color: white; text-align: center; text-decoration: none; border-radius: 6px; }
-        .download:hover { background: #333; }
-        .footer { margin-top: 20px; text-align: center; color: #999; font-size: 12px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial;
+            background: #f5f5f5;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 20px;
+            background: #0067b8;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #005a9e;
+        }
+
+        button:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 6px;
+            white-space: pre-wrap;
+            display: none;
+            color: #1b5e20;
+        }
+
+        .error {
+            background: #fdecea;
+            color: #b71c1c;
+        }
+
+        .download {
+            display: none;
+            margin-top: 15px;
+            padding: 14px;
+            background: #111;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 6px;
+        }
+
+        .download:hover {
+            background: #333;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+        }
+
+        .small-note {
+            font-size: 12px;
+            color: #777;
+            margin-top: 6px;
+        }
     </style>
 </head>
+
 <body>
 
 <div class="container">
+
     <h2>Printer Access Portal</h2>
     <p>Dangote Petroleum Refinery - IT Self-Service</p>
+
+    <label>Select Printer / Location</label>
+    <select id="printer">
+        <option value="">Loading printers...</option>
+    </select>
+    <div class="small-note">Choose the Sharp printer closest to the user/location.</div>
 
     <label>Full Name</label>
     <input id="name" placeholder="e.g. Hassan Abdulmalik">
@@ -32,44 +140,158 @@
     <label>Email</label>
     <input id="email" placeholder="e.g. hassan@dangote.com">
 
-    <button onclick="submit()">Request Printer Access</button>
+    <button id="submitBtn" onclick="submitRequest()">Request Printer Access</button>
 
     <div class="result" id="result"></div>
 
-    <a class="download" id="download"></a>
+    <a class="download" id="download">Download Printer Installer</a>
 
     <div class="footer">
         <p>Sharp Printer Agent v1.0</p>
         <p>Built by Hassan Abdulmalik</p>
     </div>
+
 </div>
 
+
 <script>
-async function submit(){
+async function loadPrinters() {
+    const printerSelect = document.getElementById("printer");
 
-    let res = await fetch("/api/register", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({
-            location: "E-block",
-            name: document.getElementById("name").value,
-            user_number: document.getElementById("code").value,
-            email: document.getElementById("email").value
-        })
-    });
+    try {
+        const response = await fetch("/api/printers");
+        const printers = await response.json();
 
-    let data = await res.json();
+        printerSelect.innerHTML = "";
 
-    let resultDiv = document.getElementById("result");
-    resultDiv.innerText = data.message;
-    resultDiv.style.display = "block";
+        if (!printers || printers.length === 0) {
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "No printers available";
+            printerSelect.appendChild(option);
+            return;
+        }
 
-    let link = document.getElementById("download");
-    link.href = data.download;
-    link.innerText = "Download Printer Installer";
-    link.style.display = "block";
+        const defaultOption = document.createElement("option");
+        defaultOption.value = "";
+        defaultOption.textContent = "Select a printer";
+        printerSelect.appendChild(defaultOption);
+
+        printers.forEach(function(printer) {
+            const option = document.createElement("option");
+
+            option.value = printer.id;
+            option.textContent = printer.name + " - " + printer.location;
+
+            printerSelect.appendChild(option);
+        });
+
+    } catch (error) {
+        printerSelect.innerHTML = "";
+
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "Failed to load printers";
+
+        printerSelect.appendChild(option);
+
+        console.error("Failed to load printers:", error);
+    }
 }
+
+
+async function submitRequest() {
+
+    const printer = document.getElementById("printer").value;
+    const name = document.getElementById("name").value.trim();
+    const code = document.getElementById("code").value.trim();
+    const email = document.getElementById("email").value.trim();
+
+    const resultDiv = document.getElementById("result");
+    const downloadLink = document.getElementById("download");
+    const submitBtn = document.getElementById("submitBtn");
+
+    resultDiv.style.display = "none";
+    resultDiv.classList.remove("error");
+    downloadLink.style.display = "none";
+
+    if (!printer) {
+        resultDiv.innerText = "Please select a printer.";
+        resultDiv.classList.add("error");
+        resultDiv.style.display = "block";
+        return;
+    }
+
+    if (!name) {
+        resultDiv.innerText = "Please enter full name.";
+        resultDiv.classList.add("error");
+        resultDiv.style.display = "block";
+        return;
+    }
+
+    if (!code) {
+        resultDiv.innerText = "Please enter user code.";
+        resultDiv.classList.add("error");
+        resultDiv.style.display = "block";
+        return;
+    }
+
+    if (!email) {
+        resultDiv.innerText = "Please enter email.";
+        resultDiv.classList.add("error");
+        resultDiv.style.display = "block";
+        return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Processing...";
+
+    try {
+        const res = await fetch("/api/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                printer: printer,
+                name: name,
+                user_number: code,
+                email: email
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.success === false) {
+            resultDiv.innerText = data.message || "Request failed.";
+            resultDiv.classList.add("error");
+            resultDiv.style.display = "block";
+            return;
+        }
+
+        resultDiv.innerText = data.message;
+        resultDiv.style.display = "block";
+
+        downloadLink.href = data.download;
+        downloadLink.innerText = "Download Printer Installer";
+        downloadLink.style.display = "block";
+
+    } catch (error) {
+        resultDiv.innerText = "Server error. Please check if the backend is running.";
+        resultDiv.classList.add("error");
+        resultDiv.style.display = "block";
+
+        console.error("Request error:", error);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Request Printer Access";
+    }
+}
+
+
+window.onload = loadPrinters;
 </script>
 
 </body>
 </html>
+``

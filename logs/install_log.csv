@@ -1,0 +1,6 @@
+timestamp,name,code,email,printer_name,printer_ip,location,status
+2026-06-23T20:37:32.781575,Hassan Abdulmalik,34451,hassan@dangote.com,19A PRINTER,172.16.16.31,E-BLOCK 19A,REQUESTED
+2026-06-24T12:11:15.856022,Hassan Abdulmalik,11223,hassanabdulmalik2258@gmail.com,ICD PRINTER,172.16.18.137,E-BLOCK LOCK ICD,REGISTERED
+2026-06-24T12:15:52.032626,Abiodun,12267,abiodun.awoyemi@dangote.com,ICD PRINTER,172.16.18.137,E-BLOCK LOCK ICD,REGISTERED
+2026-06-24T12:22:27.422481,Abdul-Rahman,198504,Abdul-Rahman.Izuagie@dangote.com,ICD PRINTER,172.16.18.137,E-BLOCK LOCK ICD,REGISTERED
+2026-06-24T12:41:14.701463,Kingsley Igboneme,12006,igboneme.kingsley@dangote.com,ICD PRINTER,172.16.18.137,E-BLOCK LOCK ICD,REGISTERED
