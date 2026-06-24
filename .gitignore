@@ -68,3 +68,5 @@ static/drivers/*.exe
 # Discovery files (internal data)
 # ================================
 discover/
+
+logs/
