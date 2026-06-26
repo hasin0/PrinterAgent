@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 from tools.printer_tool import get_all_printers, get_printer
 from tools.logger_tool import write_install_log, read_install_logs
 from tools.sharp_web_register import register_user_on_sharp
-
+from fastapi.responses import Response, FileResponse
 
 app = FastAPI()
 
@@ -43,6 +43,9 @@ def api_printers():
 @app.post("/api/register")
 def register(req: RequestModel):
 
+    # ==========================================
+    # GET PRINTER
+    # ==========================================
     selected_printer = get_printer(req.printer)
 
     if not selected_printer:
@@ -58,15 +61,41 @@ def register(req: RequestModel):
     # ==========================================
     # REGISTER USER ON SHARP
     # ==========================================
-    registration_result = register_user_on_sharp.invoke({
-        "printer_ip": printer_ip,
-        "user_name": req.name,
-        "user_number": req.user_number,
-        "email": req.email
-    })
+    try:
+        registration_result = register_user_on_sharp(
+            printer_ip=printer_ip,
+            user_name=req.name,
+            user_number=req.user_number,
+            email=req.email
+        )
+    except Exception as e:
+        registration_result = f"ERROR: {str(e)}"
 
     # ==========================================
-    # WRITE LOG
+    # DETERMINE STATUS
+    # ==========================================
+    registration_text = registration_result.lower()
+
+    if "success" in registration_text:
+        log_status = "SUCCESS"
+
+    elif "already exists" in registration_text:
+        log_status = "ALREADY_EXISTS"
+
+    elif "timeout" in registration_text:
+        log_status = "TIMEOUT"
+
+    elif "login failed" in registration_text:
+        log_status = "LOGIN_FAILED"
+
+    elif "error" in registration_text:
+        log_status = "FAILED"
+
+    else:
+        log_status = "UNKNOWN"
+
+    # ==========================================
+    # LOG REQUEST
     # ==========================================
     try:
         write_install_log(
@@ -76,7 +105,8 @@ def register(req: RequestModel):
             printer_name=printer_name,
             printer_ip=printer_ip,
             location=printer_location,
-            status="REGISTERED"
+            status=log_status,
+            details=registration_result
         )
     except Exception as e:
         print("Log Error:", e)
@@ -94,59 +124,9 @@ def register(req: RequestModel):
     return {
         "success": True,
         "message": registration_result,
+        "status": log_status,
         "download": "/api/installer?" + query_params
     }
-
-    selected_printer = get_printer(req.printer)
-
-    if not selected_printer:
-        return {
-            "success": False,
-            "message": "Invalid printer selected. Please refresh the page and try again."
-        }
-
-    printer_ip = selected_printer.get("ip", "")
-    printer_name = selected_printer.get("display_name", req.printer)
-    printer_location = selected_printer.get("location", "")
-
-    result = (
-        "SUCCESS\n\n"
-        "User Registered:\n"
-        "- Name: " + req.name + "\n"
-        "- Code: " + req.user_number + "\n"
-        "- Email: " + req.email + "\n\n"
-        "Printer: " + printer_name + "\n"
-        "Location: " + printer_location + "\n"
-        "Printer IP: " + printer_ip
-    )
-
-    query_params = urlencode({
-        "ip": printer_ip,
-        "name": printer_name,
-        "user": req.name,
-        "code": req.user_number
-    })
-
-    # ✅ Log it (now correctly inside register)
-    try:
-        write_install_log(
-            name=req.name,
-            code=req.user_number,
-            email=req.email,
-            printer_name=printer_name,
-            printer_ip=printer_ip,
-            location=printer_location,
-            status="REQUESTED"
-        )
-    except Exception as log_error:
-        print("Log write failed:", log_error)
-
-    return {
-        "success": True,
-        "message": result,
-        "download": "/api/installer?" + query_params
-    }
-
 
 # ================================
 # SERVE CONFIG SCRIPT
@@ -179,6 +159,17 @@ def api_logs():
     return read_install_logs()
 
 
+@app.get("/dashboard")
+def dashboard():
+    return FileResponse("static/dashboard.html")
+
+# ================================
+# dashboard API
+# ================================
+
+@app.get("/dashboard")
+def dashboard():
+    return FileResponse("static/dashboard.html")
 # ================================
 # INSTALLER SCRIPT GENERATOR
 # ================================

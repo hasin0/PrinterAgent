@@ -1,4 +1,4 @@
-from langchain_core.tools import tool
+# from langchain_core.tools import tool
 from playwright.sync_api import sync_playwright
 import time
 import threading
@@ -6,7 +6,7 @@ import os
 
 
 
-@tool
+# @tool
 def register_user_on_sharp(
     printer_ip: str,
     user_name: str,

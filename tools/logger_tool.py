@@ -2,16 +2,32 @@ import csv
 import os
 from datetime import datetime
 
+
 LOG_FILE = "logs/install_log.csv"
 
 
-def write_install_log(name, code, email, printer_name, printer_ip, location, status):
+def write_install_log(
+    name,
+    code,
+    email,
+    printer_name,
+    printer_ip,
+    location,
+    status,
+    details=""
+):
 
     os.makedirs("logs", exist_ok=True)
 
     file_exists = os.path.exists(LOG_FILE)
 
-    with open(LOG_FILE, mode="a", newline="", encoding="utf-8") as f:
+    with open(
+        LOG_FILE,
+        mode="a",
+        newline="",
+        encoding="utf-8"
+    ) as f:
+
         writer = csv.writer(f)
 
         if not file_exists:
@@ -23,7 +39,8 @@ def write_install_log(name, code, email, printer_name, printer_ip, location, sta
                 "printer_name",
                 "printer_ip",
                 "location",
-                "status"
+                "status",
+                "details"
             ])
 
         writer.writerow([
@@ -34,15 +51,21 @@ def write_install_log(name, code, email, printer_name, printer_ip, location, sta
             printer_name,
             printer_ip,
             location,
-            status
+            status,
+            details
         ])
 
 
-def read_install_logs(limit=20):
+def read_install_logs(limit=50):
 
     if not os.path.exists(LOG_FILE):
         return []
 
-    with open(LOG_FILE, encoding="utf-8") as f:
+    with open(
+        LOG_FILE,
+        encoding="utf-8"
+    ) as f:
+
         reader = list(csv.DictReader(f))
+
         return reader[-limit:]

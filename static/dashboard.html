@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dangote Refinery - Printer Agent Dashboard</title>
+
+    https://fonts.googleapis.com
+
+    400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f4f6fb 0%, #eaf0fa 100%);
+            min-height: 100vh;
+            color: #1f2937;
+        }
+
+
+        /* TOP NAV */
+
+        .topbar {
+            background: linear-gradient(90deg, #002b5b, #004080);
+            color: white;
+            padding: 16px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .brand .dot {
+            width: 12px;
+            height: 12px;
+            background: #ffcc29;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #ffcc29;
+        }
+
+        .topbar a {
+            color: white;
+            text-decoration: none;
+            background: rgba(255,255,255,0.12);
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+
+        .topbar a:hover {
+            background: rgba(255,255,255,0.25);
+        }
+
+
+        /* HERO */
+
+        .hero {
+            text-align: center;
+            padding: 30px 20px 10px;
+        }
+
+        .hero h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #002b5b;
+        }
+
+        .hero p {
+            color: #555;
+            font-size: 14px;
+        }
+
+
+        /* WRAPPER */
+
+        .wrapper {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+
+        /* STAT CARDS */
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 18px 22px;
+            box-shadow:
+                0 4px 10px rgba(0,30,80,0.06),
+                0 1px 2px rgba(0,30,80,0.03);
+            border-left: 4px solid #0067b8;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .card span {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #777;
+        }
+
+        .card strong {
+            font-size: 22px;
+            color: #1f2937;
+        }
+
+        .card.success { border-left-color: #2e7d32; }
+        .card.warning { border-left-color: #f57c00; }
+        .card.failed { border-left-color: #c62828; }
+
+        .card.success strong { color: #2e7d32; }
+        .card.warning strong { color: #f57c00; }
+        .card.failed strong { color: #c62828; }
+
+
+        /* CONTROLS */
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        input,
+        select {
+            padding: 11px 14px;
+            border: 1px solid #dbe2ee;
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+            flex: 1;
+            min-width: 180px;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #0067b8;
+            box-shadow: 0 0 0 3px rgba(0,103,184,0.15);
+        }
+
+        button {
+            padding: 11px 18px;
+            background: linear-gradient(90deg, #0067b8, #003a75);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0,103,184,0.25);
+        }
+
+
+        /* TABLE */
+
+        .table-wrapper {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow:
+                0 4px 12px rgba(0,30,80,0.06),
+                0 1px 2px rgba(0,30,80,0.03);
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 13px;
+        }
+
+        thead {
+            background: #f1f5fa;
+            color: #1f2937;
+        }
+
+        th, td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid #eef2f7;
+            vertical-align: top;
+        }
+
+        tr:hover {
+            background: #fafcff;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: white;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .badge.success { background: #2e7d32; }
+        .badge.warning { background: #f57c00; }
+        .badge.error { background: #c62828; }
+        .badge.unknown { background: #757575; }
+
+        .details {
+            max-width: 320px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #555;
+        }
+
+        .empty {
+            padding: 30px;
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+        }
+
+
+        /* FOOTER */
+
+        .footer {
+            margin: 40px auto;
+            text-align: center;
+            color: #888;
+            font-size: 12px;
+        }
+
+        .footer a {
+            color: #0067b8;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+    </style>
+</head>
+
+<body>
+
+
+<!-- TOPBAR -->
+<div class="topbar">
+
+    <div class="brand">
+        <div class="dot"></div>
+        Dangote Refinery — IT Self-Service
+    </div>
+
+    /
+
+</div>
+
+
+<!-- HERO -->
+<div class="hero">
+    <h1>Printer Agent — Admin Dashboard</h1>
+    <p>Real-time visibility into printer registrations and installations</p>
+</div>
+
+
+<div class="wrapper">
+
+
+    <!-- STAT CARDS -->
+    <div class="stats">
+        <div class="card">
+            <span>Total Requests</span>
+            <strong id="total">0</strong>
+        </div>
+
+        <div class="card success">
+            <span>Successful</span>
+            <strong id="success">0</strong>
+        </div>
+
+        <div class="card warning">
+            <span>Already Exists</span>
+            <strong id="exists">0</strong>
+        </div>
+
+        <div class="card failed">
+            <span>Failed</span>
+            <strong id="failed">0</strong>
+        </div>
+    </div>
+
+
+    <!-- FILTERS -->
+    <div class="controls">
+
+        <input
+            id="search"
+            placeholder="Search by user, printer, or location..."
+            oninput="renderTable()">
+
+        <select id="statusFilter" onchange="renderTable()">
+            <option value="">All Statuses</option>
+            <option value="SUCCESS">SUCCESS</option>
+            <option value="ALREADY_EXISTS">ALREADY_EXISTS</option>
+            <option value="TIMEOUT">TIMEOUT</option>
+            <option value="LOGIN_FAILED">LOGIN_FAILED</option>
+            <option value="FAILED">FAILED</option>
+            <option value="UNKNOWN">UNKNOWN</option>
+        </select>
+
+        <button onclick="loadLogs()">Refresh</button>
+
+    </div>
+
+
+    <!-- TABLE -->
+    <div class="table-wrapper">
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>User</th>
+                    <th>Code</th>
+                    <th>Printer</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+
+            <tbody id="tbody">
+            </tbody>
+        </table>
+
+        <div id="emptyState" class="empty" style="display:none;">
+            No registration logs available yet.
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<!-- FOOTER -->
+<div class="footer">
+    <p>Sharp Printer Agent v1.0</p>
+    <p>Built by Hassan Abdulmalik</p>
+</div>
+
+
+<script>
+
+let allLogs = [];
+
+function badgeClass(status) {
+
+    if (status === "SUCCESS") return "success";
+    if (status === "ALREADY_EXISTS") return "warning";
+
+    if (
+        status === "FAILED" ||
+        status === "TIMEOUT" ||
+        status === "LOGIN_FAILED"
+    ) {
+        return "error";
+    }
+
+    return "unknown";
+}
+
+
+function formatTime(ts) {
+
+    try {
+        const d = new Date(ts);
+        return d.toLocaleString();
+    } catch (e) {
+        return ts;
+    }
+}
+
+
+function renderTable() {
+
+    const tbody = document.getElementById("tbody");
+    const emptyState = document.getElementById("emptyState");
+
+    const search = document.getElementById("search").value.trim().toLowerCase();
+    const statusFilter = document.getElementById("statusFilter").value;
+
+    tbody.innerHTML = "";
+
+    let totalCount = 0;
+    let successCount = 0;
+    let existsCount = 0;
+    let failedCount = 0;
+
+    const filtered = allLogs.filter(row => {
+
+        const matchSearch =
+            !search ||
+            (row.name || "").toLowerCase().includes(search) ||
+            (row.printer_name || "").toLowerCase().includes(search) ||
+            (row.location || "").toLowerCase().includes(search);
+
+        const matchStatus =
+            !statusFilter ||
+            row.status === statusFilter;
+
+        return matchSearch && matchStatus;
+    });
+
+
+    filtered.slice().reverse().forEach(row => {
+
+        totalCount += 1;
+
+        if (row.status === "SUCCESS") {
+            successCount += 1;
+        } else if (row.status === "ALREADY_EXISTS") {
+            existsCount += 1;
+        } else if (
+            row.status === "FAILED" ||
+            row.status === "TIMEOUT" ||
+            row.status === "LOGIN_FAILED"
+        ) {
+            failedCount += 1;
+        }
+
+
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+            <td>${formatTime(row.timestamp)}</td>
+            <td>${row.name || ""}</td>
+            <td>${row.code || ""}</td>
+            <td>${row.printer_name || ""}</td>
+            <td>${row.location || ""}</td>
+            <td>
+                <span class="badge ${badgeClass(row.status)}">
+                    ${row.status || ""}
+                </span>
+            </td>
+            <td class="details" title="${(row.details || '').replace(/"/g, '&quot;')}">
+                ${(row.details || "").substring(0, 100)}
+            </td>
+        `;
+
+        tbody.appendChild(tr);
+    });
+
+
+    document.getElementById("total").innerText = totalCount;
+    document.getElementById("success").innerText = successCount;
+    document.getElementById("exists").innerText = existsCount;
+    document.getElementById("failed").innerText = failedCount;
+
+
+    if (totalCount === 0) {
+        emptyState.style.display = "block";
+    } else {
+        emptyState.style.display = "none";
+    }
+}
+
+
+async function loadLogs() {
+
+    try {
+
+        const res = await fetch("/api/logs");
+        const data = await res.json();
+
+        allLogs = data;
+
+        renderTable();
+
+    } catch (e) {
+        console.error("Failed to load logs:", e);
+    }
+}
+
+
+window.onload = function() {
+    loadLogs();
+    setInterval(loadLogs, 10000);
+};
+
+</script>
+
+</body>
+</html>

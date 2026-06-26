@@ -1,113 +1,149 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Printer Access Portal</title>
+    <title>Dangote Refinery - Printer Access Portal</title>
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
 
     <style>
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Inter', Arial, sans-serif;
         }
 
         body {
-            font-family: Arial;
-            background: #f5f5f5;
-            padding: 40px;
+            background: linear-gradient(135deg, #f4f6fb 0%, #eaf0fa 100%);
+            min-height: 100vh;
+            color: #1f2937;
+        }
+
+        .topbar {
+            background: linear-gradient(90deg, #002b5b, #004080);
+            color: white;
+            padding: 16px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .brand .dot {
+            width: 12px;
+            height: 12px;
+            background: #ffcc29;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #ffcc29;
+        }
+
+        .topbar a {
+            color: white;
+            text-decoration: none;
+            background: rgba(255,255,255,0.12);
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+
+        .topbar a:hover {
+            background: rgba(255,255,255,0.25);
+        }
+
+        .hero {
+            text-align: center;
+            padding: 40px 20px 30px;
+        }
+
+        .hero h1 {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #002b5b;
+        }
+
+        .hero p {
+            color: #555;
+            font-size: 14px;
         }
 
         .container {
-            max-width: 500px;
-            margin: auto;
+            max-width: 520px;
+            margin: 0 auto;
             background: white;
+            border-radius: 16px;
             padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        h2 {
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        p {
-            color: #666;
-            margin-bottom: 10px;
+            box-shadow:
+                0 6px 18px rgba(0,30,80,0.08),
+                0 2px 4px rgba(0,30,80,0.04);
         }
 
         label {
             display: block;
-            margin-top: 15px;
-            font-weight: bold;
-            color: #555;
+            font-weight: 600;
+            margin-top: 16px;
+            font-size: 13px;
+            color: #1f2937;
         }
 
         input,
         select {
             width: 100%;
-            padding: 12px;
-            margin-top: 5px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
+            padding: 12px 14px;
+            margin-top: 6px;
+            border: 1px solid #dbe2ee;
+            border-radius: 8px;
             font-size: 14px;
+            background: #fafbfd;
+            transition: 0.2s;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #0067b8;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(0,103,184,0.15);
         }
 
         button {
             width: 100%;
             padding: 14px;
-            margin-top: 20px;
-            background: #0067b8;
+            margin-top: 22px;
+            background: linear-gradient(90deg, #0067b8, #003a75);
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 10px;
+            font-weight: 600;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 15px;
+            transition: 0.2s;
         }
 
         button:hover {
-            background: #005a9e;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 14px rgba(0,103,184,0.25);
         }
 
         button:disabled {
-            background: #999;
+            background: #aaa;
             cursor: not-allowed;
-        }
-
-        .result {
-            margin-top: 20px;
-            padding: 15px;
-            background: #e8f5e9;
-            border-radius: 6px;
-            white-space: pre-wrap;
-            display: none;
-            color: #1b5e20;
-        }
-
-        .error {
-            background: #fdecea;
-            color: #b71c1c;
-        }
-
-        .download {
-            display: none;
-            margin-top: 15px;
-            padding: 14px;
-            background: #111;
-            color: white;
-            text-align: center;
-            text-decoration: none;
-            border-radius: 6px;
-        }
-
-        .download:hover {
-            background: #333;
-        }
-
-        .footer {
-            margin-top: 20px;
-            text-align: center;
-            color: #999;
-            font-size: 12px;
         }
 
         .small-note {
@@ -115,50 +151,162 @@
             color: #777;
             margin-top: 6px;
         }
+
+        .result {
+            margin-top: 20px;
+            padding: 16px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            white-space: pre-wrap;
+            display: none;
+            font-size: 13px;
+        }
+
+        .result.success {
+            background: #e8f6ec;
+            color: #185a27;
+            border: 1px solid #c6ecd1;
+        }
+
+        .result.warning {
+            background: #fff7e1;
+            color: #6d4c00;
+            border: 1px solid #ffe7a5;
+        }
+
+        .result.error {
+            background: #fdeaea;
+            color: #911b1b;
+            border: 1px solid #f6c1c1;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-top: 12px;
+            color: white;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .badge.success { background: #2e7d32; }
+        .badge.warning { background: #f57c00; }
+        .badge.error { background: #c62828; }
+
+        .download {
+            display: none;
+            margin-top: 16px;
+            padding: 13px;
+            background: #0e1726;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .download:hover {
+            background: #1d293f;
+        }
+
+        .footer {
+            margin: 40px auto;
+            text-align: center;
+            color: #888;
+            font-size: 12px;
+        }
+
+        .footer a {
+            color: #0067b8;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
     </style>
 </head>
 
 <body>
 
-<div class="container">
 
-    <h2>Printer Access Portal</h2>
-    <p>Dangote Petroleum Refinery - IT Self-Service</p>
+<!-- TOP NAVIGATION -->
+<div class="topbar">
+    <div class="brand">
+        <div class="dot"></div>
+        Dangote Refinery — IT Self-Service
+    </div>
+
+    <a href="/dashboard">Admin Dashboard →</a>
+</div>
+
+
+<!-- HERO -->
+<div class="hero">
+    <h1>Sharp Printer Access Portal</h1>
+    <p>Register, install, and configure printers in seconds.</p>
+</div>
+
+
+<!-- FORM CARD -->
+<div class="container">
 
     <label>Select Printer / Location</label>
     <select id="printer">
         <option value="">Loading printers...</option>
     </select>
-    <div class="small-note">Choose the Sharp printer closest to the user/location.</div>
+    <div class="small-note">
+        Choose the Sharp printer closest to the user/location.
+    </div>
+
 
     <label>Full Name</label>
     <input id="name" placeholder="e.g. Hassan Abdulmalik">
 
+
     <label>User Code (5-8 digits)</label>
     <input id="code" placeholder="e.g. 34451">
 
-    <label>Email</label>
+
+    <label>Email Address</label>
     <input id="email" placeholder="e.g. hassan@dangote.com">
 
-    <button id="submitBtn" onclick="submitRequest()">Request Printer Access</button>
+
+    <button id="submitBtn" onclick="submitRequest()">
+        Request Printer Access
+    </button>
+
 
     <div class="result" id="result"></div>
 
-    <a class="download" id="download">Download Printer Installer</a>
 
-    <div class="footer">
-        <p>Sharp Printer Agent v1.0</p>
-        <p>Built by Hassan Abdulmalik</p>
-    </div>
+    <div id="badgeArea"></div>
+
+
+    <a class="download" id="download">
+        Download Printer Installer
+    </a>
 
 </div>
 
 
+<!-- FOOTER -->
+<div class="footer">
+    <p>Sharp Printer Agent v1.0</p>
+    <p>Built by <a href="#">Hassan Abdulmalik</a></p>
+</div>
+
+
 <script>
+
 async function loadPrinters() {
-    const printerSelect = document.getElementById("printer");
+
+    const printerSelect =
+        document.getElementById("printer");
 
     try {
+
         const response = await fetch("/api/printers");
         const printers = await response.json();
 
@@ -179,14 +327,13 @@ async function loadPrinters() {
 
         printers.forEach(function(printer) {
             const option = document.createElement("option");
-
             option.value = printer.id;
-            option.textContent = printer.name + " - " + printer.location;
-
+            option.textContent = printer.name + " — " + printer.location;
             printerSelect.appendChild(option);
         });
 
     } catch (error) {
+
         printerSelect.innerHTML = "";
 
         const option = document.createElement("option");
@@ -200,53 +347,102 @@ async function loadPrinters() {
 }
 
 
+function setResult(message, statusClass) {
+
+    const resultDiv =
+        document.getElementById("result");
+
+    resultDiv.classList.remove("success", "warning", "error");
+    resultDiv.style.display = "block";
+
+    if (statusClass) {
+        resultDiv.classList.add(statusClass);
+    }
+
+    resultDiv.innerText = message;
+}
+
+
+function setBadge(status) {
+
+    const badgeArea =
+        document.getElementById("badgeArea");
+
+    badgeArea.innerHTML = "";
+
+    if (!status) return;
+
+    let cls = "success";
+
+    if (
+        status === "FAILED" ||
+        status === "TIMEOUT" ||
+        status === "LOGIN_FAILED" ||
+        status === "UNKNOWN"
+    ) {
+        cls = "error";
+    } else if (status === "ALREADY_EXISTS") {
+        cls = "warning";
+    }
+
+    badgeArea.innerHTML =
+        `<span class="badge ${cls}">${status}</span>`;
+}
+
+
 async function submitRequest() {
 
-    const printer = document.getElementById("printer").value;
-    const name = document.getElementById("name").value.trim();
-    const code = document.getElementById("code").value.trim();
-    const email = document.getElementById("email").value.trim();
+    const printer =
+        document.getElementById("printer").value;
 
-    const resultDiv = document.getElementById("result");
-    const downloadLink = document.getElementById("download");
-    const submitBtn = document.getElementById("submitBtn");
+    const name =
+        document.getElementById("name").value.trim();
 
-    resultDiv.style.display = "none";
-    resultDiv.classList.remove("error");
+    const code =
+        document.getElementById("code").value.trim();
+
+    const email =
+        document.getElementById("email").value.trim();
+
+    const downloadLink =
+        document.getElementById("download");
+
+    const submitBtn =
+        document.getElementById("submitBtn");
+
+
     downloadLink.style.display = "none";
+    setBadge(null);
 
     if (!printer) {
-        resultDiv.innerText = "Please select a printer.";
-        resultDiv.classList.add("error");
-        resultDiv.style.display = "block";
+        setResult("Please select a printer.", "error");
         return;
     }
 
     if (!name) {
-        resultDiv.innerText = "Please enter full name.";
-        resultDiv.classList.add("error");
-        resultDiv.style.display = "block";
+        setResult("Please enter full name.", "error");
         return;
     }
 
     if (!code) {
-        resultDiv.innerText = "Please enter user code.";
-        resultDiv.classList.add("error");
-        resultDiv.style.display = "block";
+        setResult("Please enter user code.", "error");
         return;
     }
 
     if (!email) {
-        resultDiv.innerText = "Please enter email.";
-        resultDiv.classList.add("error");
-        resultDiv.style.display = "block";
+        setResult("Please enter email.", "error");
         return;
     }
+
 
     submitBtn.disabled = true;
     submitBtn.innerText = "Processing...";
 
+    setResult("Submitting registration request...", null);
+
+
     try {
+
         const res = await fetch("/api/register", {
             method: "POST",
             headers: {
@@ -262,27 +458,39 @@ async function submitRequest() {
 
         const data = await res.json();
 
-        if (data.success === false) {
-            resultDiv.innerText = data.message || "Request failed.";
-            resultDiv.classList.add("error");
-            resultDiv.style.display = "block";
-            return;
+        let statusClass = "success";
+
+        if (data.status === "ALREADY_EXISTS") {
+            statusClass = "warning";
+        } else if (
+            data.status === "FAILED" ||
+            data.status === "TIMEOUT" ||
+            data.status === "LOGIN_FAILED" ||
+            data.status === "UNKNOWN"
+        ) {
+            statusClass = "error";
         }
 
-        resultDiv.innerText = data.message;
-        resultDiv.style.display = "block";
+        setResult(data.message, statusClass);
+        setBadge(data.status);
 
         downloadLink.href = data.download;
         downloadLink.innerText = "Download Printer Installer";
         downloadLink.style.display = "block";
 
     } catch (error) {
-        resultDiv.innerText = "Server error. Please check if the backend is running.";
-        resultDiv.classList.add("error");
-        resultDiv.style.display = "block";
+
+        setResult(
+            "Server error. Please check if the backend is running.",
+            "error"
+        );
+
+        setBadge("FAILED");
 
         console.error("Request error:", error);
+
     } finally {
+
         submitBtn.disabled = false;
         submitBtn.innerText = "Request Printer Access";
     }
@@ -290,8 +498,8 @@ async function submitRequest() {
 
 
 window.onload = loadPrinters;
+
 </script>
 
 </body>
 </html>
-``
