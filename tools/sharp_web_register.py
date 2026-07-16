@@ -47,7 +47,7 @@ def register_user_on_sharp(
             with sync_playwright() as p:
 
                 browser = p.chromium.launch(
-                    headless=False,      # <- True after testing
+                    headless=True,      # <-  False  after testing
                     args=["--ignore-certificate-errors"]
                 )
 

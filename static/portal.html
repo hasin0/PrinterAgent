@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Printer Agent — Request Access</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+
+:root {
+    --bg-1: #f5f7fb;
+    --bg-2: #eef2f9;
+    --bg: #f5f7fb;
+    --panel: #ffffff;
+    --border: #eef2f7;
+    --text: #0f172a;
+    --sub: #64748b;
+    --brand: #0067b8;
+    --brand-2: #0087ff;
+    --success: #2e7d32;
+    --warning: #f57c00;
+    --error: #c62828;
+    --radius: 16px;
+    --shadow: 0 6px 20px rgba(15,23,42,0.06);
+}
+
+[data-theme="dark"] {
+    --bg-1: #0b1220;
+    --bg-2: #131c30;
+    --bg: #0b1220;
+    --panel: #131c30;
+    --border: #1e293b;
+    --text: #f8fafc;
+    --sub: #94a3b8;
+    --brand: #4fb3ff;
+    --brand-2: #78c9ff;
+    --success: #4ade80;
+    --warning: #fbbf24;
+    --error: #f87171;
+    --shadow: 0 6px 20px rgba(0,0,0,0.4);
+}
+
+* { box-sizing:border-box; margin:0; padding:0; font-family:'Inter', sans-serif; }
+
+body {
+    background: linear-gradient(135deg, var(--bg-1), var(--bg-2));
+    color: var(--text);
+    min-height: 100vh;
+    transition: background 0.4s ease, color 0.4s ease;
+}
+
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.55;
+    z-index: -1;
+}
+body::before {
+    background: #74a9ff;
+    width: 380px;
+    height: 380px;
+    top: -100px;
+    left: -100px;
+}
+body::after {
+    background: #ffcc29;
+    width: 320px;
+    height: 320px;
+    bottom: -120px;
+    right: -100px;
+}
+[data-theme="dark"] body::before { background: #1c4c94; opacity: 0.55; }
+[data-theme="dark"] body::after { background: #b98b17; opacity: 0.35; }
+
+
+/* TOPBAR */
+.topbar {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px 32px;
+    background: var(--panel);
+    border-bottom:1px solid var(--border);
+}
+
+.brand { display:flex; gap:12px; align-items:center; }
+.brand .logo {
+    width:34px; height:34px;
+    border-radius:10px;
+    background:linear-gradient(135deg, var(--brand), var(--brand-2));
+    color:white; font-weight:800;
+    display:flex; align-items:center; justify-content:center;
+}
+.brand strong { font-size:14px; }
+.brand span { font-size:12px; color:var(--sub); display:block; }
+
+.topbar-actions a,
+.topbar-actions button {
+    font-size:13px;
+    color:var(--brand);
+    padding:8px 12px;
+    border-radius:10px;
+    background:rgba(0,103,184,0.08);
+    text-decoration:none;
+    font-weight:600;
+    margin-left:6px;
+    border:none;
+    cursor:pointer;
+}
+
+
+/* HERO */
+.hero {
+    padding: 60px 20px 20px;
+    text-align: center;
+}
+.hero h1 { font-size:28px; font-weight:700; }
+.hero p { font-size:14px; color:var(--sub); margin-top:6px; }
+
+
+/* FORM CARD */
+.form-card {
+    max-width: 500px;
+    margin: 20px auto 40px;
+    background: var(--panel);
+    padding: 24px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+label {
+    font-size:13px;
+    font-weight:600;
+    margin-top:14px;
+    display:block;
+}
+
+input, select {
+    width:100%;
+    padding:12px 14px;
+    border-radius:10px;
+    border:1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    font-size:14px;
+    margin-top:6px;
+    outline:none;
+}
+
+input:focus, select:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(0,103,184,0.15);
+}
+
+button.primary {
+    width:100%;
+    padding:14px;
+    margin-top:20px;
+    border:none;
+    border-radius:12px;
+    color:white;
+    background: linear-gradient(135deg, var(--brand), var(--brand-2));
+    font-weight:700;
+    cursor:pointer;
+    font-size:14px;
+}
+
+
+/* WORKFLOW MODAL */
+.workflow-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,0.55);
+    backdrop-filter: blur(6px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    padding: 20px;
+}
+.workflow-overlay.active { display: flex; }
+
+.workflow-card {
+    background: var(--panel);
+    color: var(--text);
+    border-radius: 20px;
+    padding: 24px;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.25);
+}
+
+.workflow-title {
+    display:flex;
+    gap:10px;
+    align-items:center;
+    font-weight:700;
+    font-size:16px;
+}
+
+.workflow-sub {
+    font-size:13px;
+    color:var(--sub);
+    margin-top:4px;
+}
+
+.progress-shell {
+    margin-top: 14px;
+    width: 100%;
+    height: 8px;
+    background: var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+}
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--brand), var(--brand-2));
+    border-radius: 999px;
+    transition: width 0.5s ease;
+}
+.progress-percent {
+    margin-top: 6px;
+    text-align: right;
+    font-size: 12px;
+    color: var(--sub);
+    font-weight: 600;
+}
+
+.workflow-list {
+    list-style: none;
+    margin-top: 16px;
+}
+.workflow-list li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+    opacity: 0.55;
+    transition: opacity 0.3s ease;
+}
+.workflow-list li.active { opacity: 1; }
+.workflow-list li.done { opacity: 1; }
+.step-icon {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    background: var(--border);
+    display: flex; align-items: center; justify-content: center;
+}
+.step-body { flex: 1; }
+.step-body strong { display: block; font-size: 13px; }
+.step-body span { font-size: 12px; color: var(--sub); }
+.step-state {
+    width: 24px;
+    text-align: center;
+    color: #94a3b8;
+    font-weight: 700;
+}
+.step-state.done { color: var(--success); }
+.step-state.fail { color: var(--error); }
+
+.pulse-dot {
+    width: 10px; height: 10px;
+    background: var(--brand);
+    border-radius: 50%;
+    animation: pulse 1.4s infinite;
+}
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(0,103,184,0.4); }
+    100% { box-shadow: 0 0 0 16px rgba(0,103,184,0); }
+}
+
+.workflow-footer {
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.result-box {
+    background: var(--border);
+    padding: 14px;
+    border-radius: 10px;
+    white-space: pre-wrap;
+    font-size: 13px;
+}
+.result-box.success { background: rgba(46,125,50,.15); color: var(--success); }
+.result-box.warning { background: rgba(245,124,0,.15); color: var(--warning); }
+.result-box.error   { background: rgba(198,40,40,.15); color: var(--error); }
+.download-btn {
+    padding: 13px;
+    text-align: center;
+    background: linear-gradient(135deg, var(--brand), var(--brand-2));
+    color: white;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+}
+.close-btn {
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: var(--border);
+    color: var(--text);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+</style>
+</head>
+<body>
+
+<div class="topbar">
+    <div class="brand">
+        <div class="logo">D</div>
+        <div>
+            <strong>Dangote Refinery</strong>
+            <span>Printer Agent — Portal</span>
+        </div>
+    </div>
+    <div class="topbar-actions">
+        <a href="/">Home</a>
+        <a href="/dashboard">Dashboard</a>
+        <button onclick="toggleTheme()">🌓</button>
+    </div>
+</div>
+
+
+<div class="hero">
+    <h1>Request Printer Access</h1>
+    <p>Fill in the details below and the automation will handle the rest.</p>
+</div>
+
+
+<div class="form-card">
+
+    <label>Printer</label>
+    <select id="printer"><option>Loading printers...</option></select>
+
+    <label>Full Name</label>
+    <input id="name" placeholder="e.g. Hassan Abdulmalik">
+
+    <label>User Code (5–8 digits)</label>
+    <input id="code" placeholder="e.g. 34451">
+
+    <label>Email</label>
+    <input id="email" placeholder="e.g. hassan@dangote.com">
+
+    <button class="primary" onclick="submitRequest()">
+        Request Printer Access
+    </button>
+</div>
+
+
+<!-- WORKFLOW MODAL -->
+<div class="workflow-overlay" id="workflowModal">
+    <div class="workflow-card">
+
+        <div class="workflow-title">
+            <div class="pulse-dot"></div>
+            Automation in progress
+        </div>
+        <div class="workflow-sub" id="workflowSub">
+            Printer Agent is running your request...
+        </div>
+
+        <div class="progress-shell">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="progress-percent" id="progressPercent">0%</div>
+
+        <ul class="workflow-list">
+            <li id="step-1"><div class="step-icon">🌐</div><div class="step-body"><strong>Opening Sharp printer</strong><span id="s1-msg">Waiting...</span></div><div class="step-state" id="s1">•</div></li>
+            <li id="step-2"><div class="step-icon">🔐</div><div class="step-body"><strong>Administrator login</strong><span id="s2-msg">Waiting...</span></div><div class="step-state" id="s2">•</div></li>
+            <li id="step-3"><div class="step-icon">📂</div><div class="step-body"><strong>Navigating User Settings</strong><span id="s3-msg">Waiting...</span></div><div class="step-state" id="s3">•</div></li>
+            <li id="step-4"><div class="step-icon">📝</div><div class="step-body"><strong>Filling registration form</strong><span id="s4-msg">Waiting...</span></div><div class="step-state" id="s4">•</div></li>
+            <li id="step-5"><div class="step-icon">📤</div><div class="step-body"><strong>Submitting</strong><span id="s5-msg">Waiting...</span></div><div class="step-state" id="s5">•</div></li>
+            <li id="step-6"><div class="step-icon">✅</div><div class="step-body"><strong>Verifying result</strong><span id="s6-msg">Waiting...</span></div><div class="step-state" id="s6">•</div></li>
+        </ul>
+
+        <div class="workflow-footer" id="workflowFooter" style="display:none;">
+            <div class="result-box" id="resultBox"></div>
+            <a class="download-btn" id="downloadBtn" style="display:none;">Download Installer</a>
+            <button class="close-btn" onclick="closeWorkflow()">Close</button>
+        </div>
+
+    </div>
+</div>
+
+
+<script>
+
+function applyTheme(theme) {
+    if (theme === "dark") document.documentElement.setAttribute("data-theme", "dark");
+    else document.documentElement.removeAttribute("data-theme");
+    localStorage.setItem("theme", theme);
+}
+function toggleTheme() {
+    const c = document.documentElement.getAttribute("data-theme");
+    applyTheme(c === "dark" ? "light" : "dark");
+}
+(function(){
+    const saved = localStorage.getItem("theme");
+    if (saved) applyTheme(saved);
+    else if (matchMedia("(prefers-color-scheme: dark)").matches) applyTheme("dark");
+})();
+
+
+async function loadPrinters() {
+    try {
+        const res = await fetch("/api/printers");
+        const printers = await res.json();
+
+        const sel = document.getElementById("printer");
+        sel.innerHTML = "<option value=''>Select a printer</option>";
+
+        printers.forEach(p => {
+            const opt = document.createElement("option");
+            opt.value = p.id;
+            opt.textContent = p.name + " — " + p.location;
+            sel.appendChild(opt);
+        });
+    } catch (e) {
+        console.error(e);
+    }
+}
+window.onload = loadPrinters;
+
+
+function setProgress(percent) {
+    document.getElementById("progressBar").style.width = percent + "%";
+    document.getElementById("progressPercent").innerText = percent + "%";
+}
+
+function resetSteps() {
+    for (let i = 1; i <= 6; i++) {
+        const li = document.getElementById("step-" + i);
+        li.classList.remove("active", "done");
+
+        const s = document.getElementById("s" + i);
+        s.classList.remove("done","fail");
+        s.innerHTML = "•";
+        document.getElementById("s" + i + "-msg").innerText = "Waiting...";
+    }
+    document.getElementById("workflowFooter").style.display = "none";
+    document.getElementById("resultBox").innerText = "";
+    document.getElementById("downloadBtn").style.display = "none";
+    setProgress(0);
+}
+
+function markStep(step, status) {
+    const li = document.getElementById("step-" + step);
+    const s = document.getElementById("s" + step);
+
+    if (status === "start") {
+        li.classList.add("active");
+        s.innerHTML = "⏳";
+    } else if (status === "done") {
+        li.classList.add("done");
+        s.classList.add("done");
+        s.innerHTML = "✅";
+    } else if (status === "fail") {
+        s.classList.add("fail");
+        s.innerHTML = "✖";
+    }
+}
+
+function showFinal(data) {
+    setProgress(100);
+
+    const footer = document.getElementById("workflowFooter");
+    const box = document.getElementById("resultBox");
+    const btn = document.getElementById("downloadBtn");
+
+    box.classList.remove("success","warning","error");
+
+    let cls = "success";
+    if (data.status === "ALREADY_EXISTS") cls = "warning";
+    else if (["REGISTRATION_FAILED","LOGIN_FAILED","TIMEOUT","UNKNOWN"].includes(data.status)) cls = "error";
+    box.classList.add(cls);
+
+let msg = data.message || "Completed.";
+
+if (data.ticket_id) {
+    msg += "\n\nFreshService Ticket: SR-" + data.ticket_id;
+}
+
+box.innerText = msg;
+
+ if (data.download) {
+    btn.href = data.download;
+    btn.style.display = "block";
+} else {
+    btn.style.display = "none";
+}
+    footer.style.display = "flex";
+}
+
+function closeWorkflow() {
+    document.getElementById("workflowModal").classList.remove("active");
+}
+
+
+async function submitRequest() {
+
+    const printer = document.getElementById("printer").value;
+    const name = document.getElementById("name").value.trim();
+    const code = document.getElementById("code").value.trim();
+    const email = document.getElementById("email").value.trim();
+
+    if (!printer || !name || !code || !email) {
+        alert("Please fill all fields.");
+        return;
+    }
+
+    document.getElementById("workflowModal").classList.add("active");
+    resetSteps();
+
+    // Animate steps in parallel with backend request
+    markStep(1, "start");
+    setProgress(15);
+    setTimeout(() => { markStep(1, "done"); markStep(2, "start"); setProgress(30); }, 1200);
+    setTimeout(() => { markStep(2, "done"); markStep(3, "start"); setProgress(45); }, 2400);
+    setTimeout(() => { markStep(3, "done"); markStep(4, "start"); setProgress(60); }, 3600);
+    setTimeout(() => { markStep(4, "done"); markStep(5, "start"); setProgress(75); }, 4800);
+    setTimeout(() => { markStep(5, "done"); markStep(6, "start"); setProgress(90); }, 5800);
+
+    try {
+
+        const res = await fetch("/api/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                printer: printer,
+                name: name,
+                user_number: code,
+                email: email
+            })
+        });
+
+        const data = await res.json();
+
+        setTimeout(() => {
+            markStep(6, "done");
+            showFinal(data);
+        }, 6800);
+
+    } catch (e) {
+
+        console.error(e);
+        setTimeout(() => {
+            markStep(6, "fail");
+            showFinal({
+                status: "FAILED",
+                message: "Server error contacting backend."
+            });
+        }, 6800);
+    }
+}
+
+</script>
+
+</body>
+</html>

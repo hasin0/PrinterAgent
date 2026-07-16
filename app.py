@@ -3,11 +3,13 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import Response, FileResponse
 from pydantic import BaseModel
 from urllib.parse import urlencode
+import os
 
 from tools.printer_tool import get_all_printers, get_printer
 from tools.logger_tool import write_install_log, read_install_logs
 from tools.sharp_web_register import register_user_on_sharp
-from fastapi.responses import Response, FileResponse
+from tools.freshservice_tool import create_freshservice_ticket
+from tools.printer_monitor import get_printer_statuses
 
 app = FastAPI()
 
@@ -17,6 +19,9 @@ app = FastAPI()
 # ================================
 DRIVER_FILE_NAME = "sharp_driver.exe"
 SERVER_BASE_URL = "http://127.0.0.1:8000"
+INSTALLER_DIR = "generated_installers"
+
+os.makedirs(INSTALLER_DIR, exist_ok=True)
 
 
 # ================================
@@ -30,11 +35,28 @@ class RequestModel(BaseModel):
 
 
 # ================================
-# GET AVAILABLE PRINTERS
+# HELPERS
+# ================================
+def map_status_to_freshservice(log_status):
+    if log_status == "REGISTRATION_SUCCESS":
+        return 4
+    elif log_status == "ALREADY_EXISTS":
+        return 3
+    else:
+        return 2
+
+
+# ================================
+# PRINTERS
 # ================================
 @app.get("/api/printers")
 def api_printers():
     return get_all_printers()
+
+
+@app.get("/api/printer-status")
+def printer_status():
+    return get_printer_statuses()
 
 
 # ================================
@@ -43,9 +65,6 @@ def api_printers():
 @app.post("/api/register")
 def register(req: RequestModel):
 
-    # ==========================================
-    # GET PRINTER
-    # ==========================================
     selected_printer = get_printer(req.printer)
 
     if not selected_printer:
@@ -58,9 +77,9 @@ def register(req: RequestModel):
     printer_name = selected_printer["display_name"]
     printer_location = selected_printer["location"]
 
-    # ==========================================
-    # REGISTER USER ON SHARP
-    # ==========================================
+    # =============================
+    # Sharp Registration
+    # =============================
     try:
         registration_result = register_user_on_sharp(
             printer_ip=printer_ip,
@@ -69,34 +88,86 @@ def register(req: RequestModel):
             email=req.email
         )
     except Exception as e:
-        registration_result = f"ERROR: {str(e)}"
+        registration_result = f"FAILED: {str(e)}"
 
-    # ==========================================
-    # DETERMINE STATUS
-    # ==========================================
-    registration_text = registration_result.lower()
+    text = registration_result.lower()
 
-    if "success" in registration_text:
-        log_status = "SUCCESS"
-
-    elif "already exists" in registration_text:
+    if "success" in text:
+        log_status = "REGISTRATION_SUCCESS"
+    elif "already_exists" in text:
         log_status = "ALREADY_EXISTS"
-
-    elif "timeout" in registration_text:
-        log_status = "TIMEOUT"
-
-    elif "login failed" in registration_text:
+    elif "login_failed" in text:
         log_status = "LOGIN_FAILED"
-
-    elif "error" in registration_text:
-        log_status = "FAILED"
-
+    elif "timeout" in text:
+        log_status = "TIMEOUT"
+    elif "failed" in text:
+        log_status = "REGISTRATION_FAILED"
     else:
         log_status = "UNKNOWN"
 
-    # ==========================================
-    # LOG REQUEST
-    # ==========================================
+    # =============================
+    # Generate installer BAT on disk (only if success)
+    # =============================
+    installer_file_path = None
+
+    if log_status == "REGISTRATION_SUCCESS":
+        safe_code = "".join(
+            c for c in req.user_number if c.isalnum()
+        )
+        installer_file_path = os.path.join(
+            INSTALLER_DIR,
+            f"install_printer_{safe_code}.bat"
+        )
+        try:
+            script = get_installer_script(
+                printer_ip,
+                printer_name,
+                req.name,
+                req.user_number
+            )
+            with open(installer_file_path, "w", encoding="utf-8") as f:
+                f.write(script)
+        except Exception as e:
+            print("Installer file generation failed:", e)
+            installer_file_path = None
+
+    # =============================
+    # FreshService Ticket
+    # =============================
+    fs_status_code = map_status_to_freshservice(log_status)
+
+    description = (
+        "<b>Printer Access Request via PrinterAgent</b><br><br>"
+        f"<b>User:</b> {req.name}<br>"
+        f"<b>User Code:</b> {req.user_number}<br>"
+        f"<b>Email:</b> {req.email}<br>"
+        f"<b>Printer:</b> {printer_name}<br>"
+        f"<b>Printer IP:</b> {printer_ip}<br>"
+        f"<b>Location:</b> {printer_location}<br>"
+        f"<b>Business Unit:</b> DPRP<br>"
+        f"<b>Unit:</b> Dangote FTZ Ibeju Lekki<br>"
+        f"<b>Ticket Complexity:</b> Low<br>"
+        f"<b>Status:</b> {log_status}<br><br>"
+        f"<b>Details:</b><br>{registration_result}"
+    )
+
+    ticket_response = create_freshservice_ticket(
+        subject=f"Printer Access Request — {printer_name}",
+        description=description,
+        requester_email=req.email,
+        status_code=fs_status_code,
+        printer_name=printer_name,
+        printer_ip=printer_ip,
+        location=printer_location,
+        user_code=req.user_number,
+        installer_path=installer_file_path
+    )
+
+    ticket_id = ticket_response.get("ticket_id")
+
+    # =============================
+    # Logging
+    # =============================
     try:
         write_install_log(
             name=req.name,
@@ -106,14 +177,15 @@ def register(req: RequestModel):
             printer_ip=printer_ip,
             location=printer_location,
             status=log_status,
-            details=registration_result
+            details=registration_result,
+            ticket_id=ticket_id
         )
     except Exception as e:
         print("Log Error:", e)
 
-    # ==========================================
-    # INSTALLER URL
-    # ==========================================
+    # =============================
+    # Installer download URL
+    # =============================
     query_params = urlencode({
         "ip": printer_ip,
         "name": printer_name,
@@ -121,15 +193,22 @@ def register(req: RequestModel):
         "code": req.user_number
     })
 
+    if log_status == "REGISTRATION_SUCCESS":
+        download_url = "/api/installer?" + query_params
+    else:
+        download_url = None
+
     return {
         "success": True,
         "message": registration_result,
         "status": log_status,
-        "download": "/api/installer?" + query_params
+        "ticket_id": ticket_id,
+        "download": download_url
     }
 
+
 # ================================
-# SERVE CONFIG SCRIPT
+# CONFIG SCRIPT
 # ================================
 @app.get("/printer_config.py")
 def get_config_script():
@@ -137,13 +216,11 @@ def get_config_script():
 
 
 # ================================
-# INSTALLER API
+# INSTALLER ENDPOINT
 # ================================
 @app.get("/api/installer")
 def installer(ip: str, name: str, user: str = "", code: str = ""):
-
     script = get_installer_script(ip, name, user, code)
-
     return Response(
         content=script,
         media_type="application/octet-stream",
@@ -152,24 +229,31 @@ def installer(ip: str, name: str, user: str = "", code: str = ""):
 
 
 # ================================
-# LOGS API
+# LOGS ENDPOINT
 # ================================
 @app.get("/api/logs")
 def api_logs():
     return read_install_logs()
 
 
+# ================================
+# PAGE ROUTES
+# ================================
+@app.get("/")
+def home():
+    return FileResponse("static/index.html")
+
+
+@app.get("/portal")
+def portal():
+    return FileResponse("static/portal.html")
+
+
 @app.get("/dashboard")
 def dashboard():
     return FileResponse("static/dashboard.html")
 
-# ================================
-# dashboard API
-# ================================
 
-@app.get("/dashboard")
-def dashboard():
-    return FileResponse("static/dashboard.html")
 # ================================
 # INSTALLER SCRIPT GENERATOR
 # ================================
@@ -177,7 +261,6 @@ def get_installer_script(ip, name, user, code):
 
     lines = []
 
-    # HEADER
     lines.append("@echo off")
     lines.append("echo ============================================")
     lines.append("echo   Sharp Printer Auto Installer")
@@ -188,7 +271,6 @@ def get_installer_script(ip, name, user, code):
     lines.append("echo ============================================")
     lines.append("echo.")
 
-    # DRIVER CHECK
     lines.append("echo Checking if Sharp driver is already installed...")
     lines.append(
         "powershell -Command \"$d = (Get-PrinterDriver | "
@@ -204,31 +286,24 @@ def get_installer_script(ip, name, user, code):
     lines.append("    goto ADD_PRINTER")
     lines.append(")")
 
-    # DRIVER DOWNLOAD
-    lines.append("echo Driver not found - attempting driver download...")
+    lines.append("echo Driver not found - downloading...")
     lines.append(
         f"powershell -Command \"Invoke-WebRequest -Uri '{SERVER_BASE_URL}/drivers/{DRIVER_FILE_NAME}' "
         "-OutFile '%TEMP%\\sharp_driver.exe'\""
     )
 
     lines.append("if not exist \"%TEMP%\\sharp_driver.exe\" (")
-    lines.append("    echo WARNING: Driver download failed or driver file not found on server.")
-    lines.append("    echo Please install Sharp driver manually if printer installation fails.")
+    lines.append("    echo WARNING: Driver download failed.")
     lines.append("    goto ADD_PRINTER")
     lines.append(")")
 
-    lines.append("echo Driver downloaded OK")
-    lines.append("echo Launching driver installer...")
-    lines.append("start /wait \"\" \"%TEMP%\\sharp_driver.exe\"")
-    lines.append("echo Driver installer completed")
+    lines.append("start /wait \"\" \"%TEMP%\\sharp_driver.exe\" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART")
     lines.append("")
 
-    # ADD PRINTER
     lines.append(":ADD_PRINTER")
     lines.append("echo.")
     lines.append("echo Configuring printer...")
 
-    lines.append("echo Creating printer port...")
     lines.append(
         f"powershell -Command \"$portName = 'IP_{ip}'; "
         f"if (-not (Get-PrinterPort -Name $portName -ErrorAction SilentlyContinue)) "
@@ -236,8 +311,6 @@ def get_installer_script(ip, name, user, code):
     )
     lines.append("echo Printer port ready")
 
-    # Find driver
-    lines.append("echo Finding Sharp printer driver...")
     lines.append(
         "powershell -Command \"$d = (Get-PrinterDriver | "
         "Where-Object { $_.Name -like '*Sharp*' } | "
@@ -245,50 +318,45 @@ def get_installer_script(ip, name, user, code):
         "if (-not $d) { echo 'ERROR: Sharp driver not found'; exit 1 }; "
         "echo $d\" > \"%TEMP%\\driver_name.txt\""
     )
-
     lines.append("set /p DRIVER_NAME=<\"%TEMP%\\driver_name.txt\"")
     lines.append("echo Found driver: %DRIVER_NAME%")
 
-    # Add printer
-    lines.append("echo Adding printer...")
     lines.append(
         f"powershell -Command \"if (-not (Get-Printer -Name '{name}' -ErrorAction SilentlyContinue)) "
         f"{{ Add-Printer -Name '{name}' -DriverName '%DRIVER_NAME%' -PortName 'IP_{ip}' }}\""
     )
     lines.append("echo Printer added")
 
-    # Set default
-    lines.append("echo Setting printer as default...")
     lines.append(
         f"powershell -Command \"(Get-WmiObject -Query "
         f"\\\"SELECT * FROM Win32_Printer WHERE Name='{name}'\\\").SetDefaultPrinter() | Out-Null\""
     )
     lines.append("echo Default printer set")
 
-    # CONFIG SCRIPT
     lines.append("echo.")
     lines.append("echo Configuring printer preferences...")
 
-    lines.append("echo Downloading configuration script...")
+    lines.append("if not exist \"%TEMP%\\printer_config.py\" (")
     lines.append(
-        f"powershell -Command \"Invoke-WebRequest -Uri '{SERVER_BASE_URL}/printer_config.py' "
+        f"    powershell -Command \"Invoke-WebRequest -Uri '{SERVER_BASE_URL}/printer_config.py' "
         "-OutFile '%TEMP%\\printer_config.py'\""
     )
+    lines.append(") else (")
+    lines.append("    echo Config script already cached")
+    lines.append(")")
 
     lines.append("if not exist \"%TEMP%\\printer_config.py\" (")
     lines.append("    echo ERROR: Could not download printer_config.py")
     lines.append("    goto MANUAL")
     lines.append(")")
 
-    lines.append("echo Checking Python installation...")
-    lines.append("python --version >nul 2>&1")
+    lines.append("python -c \"import pywinauto\" >nul 2>&1")
     lines.append("if %errorlevel% NEQ 0 (")
-    lines.append("    echo ERROR: Python is not installed or not in PATH.")
-    lines.append("    goto MANUAL")
+    lines.append("    echo Installing required dependencies...")
+    lines.append("    python -m pip install pywinauto >nul 2>&1")
+    lines.append(") else (")
+    lines.append("    echo pywinauto already installed")
     lines.append(")")
-
-    lines.append("echo Installing required dependencies...")
-    lines.append("python -m pip install pywinauto >nul 2>&1")
 
     lines.append("echo Running configuration script...")
     lines.append(f"python \"%TEMP%\\printer_config.py\" \"{name}\" \"{user}\" \"{code}\"")
@@ -298,30 +366,20 @@ def get_installer_script(ip, name, user, code):
     lines.append("    goto DONE")
     lines.append(")")
 
-    # MANUAL FALLBACK
     lines.append(":MANUAL")
     lines.append("echo.")
     lines.append("echo ============================================")
     lines.append("echo   AUTO-CONFIG FAILED - Manual Setup Needed")
     lines.append("echo ============================================")
     lines.append("echo.")
-    lines.append("echo   Printer Preferences will open now.")
-    lines.append("echo   Go to the 'Job Handling' tab:")
-    lines.append("echo.")
-    lines.append("echo   1. Change Authentication to 'User Number'")
-    lines.append("echo   2. Check 'User Name' checkbox")
-    lines.append(f"echo   3. Enter: {user}")
-    lines.append("echo   4. Click 'Apply'")
-    lines.append("echo   5. Click 'OK'")
-    lines.append("echo.")
+    lines.append(f"echo Enter Name: {user}")
     lines.append("pause")
     lines.append(f"rundll32 printui.dll,PrintUIEntry /e /n \"{name}\"")
 
-    # DONE
     lines.append(":DONE")
     lines.append("echo.")
     lines.append("echo ============================================")
-    lines.append("echo   INSTALLATION COMPLETE")
+    lines.append("echo INSTALLATION COMPLETE")
     lines.append("echo ============================================")
     lines.append("echo.")
     lines.append(f"echo Printer: {name}")
@@ -338,4 +396,4 @@ def get_installer_script(ip, name, user, code):
 # STATIC FILES
 # ================================
 app.mount("/drivers", StaticFiles(directory="static/drivers"), name="drivers")
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")

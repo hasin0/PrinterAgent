@@ -1,505 +1,379 @@
+
+
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Dangote Refinery - Printer Access Portal</title>
+<meta charset="UTF-8">
+<title>Dangote Refinery — IT Self-Service Portal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link
-        rel="preconnect"
-        href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-        rel="stylesheet">
+<style>
+:root {
+    --bg-1: #f5f7fb;
+    --bg-2: #eef2f9;
+    --text: #0f172a;
+    --sub: #4b5563;
+    --card: rgba(255,255,255,0.65);
+    --card-border: rgba(255,255,255,0.7);
+    --accent: #0067b8;
+    --accent-2: #0087ff;
+    --shadow: 0 10px 30px rgba(15,23,42,0.08);
+    --radius: 20px;
+}
 
-    <style>
+[data-theme="dark"] {
+    --bg-1: #0b1220;
+    --bg-2: #131c30;
+    --text: #f8fafc;
+    --sub: #9ca3af;
+    --card: rgba(255,255,255,0.05);
+    --card-border: rgba(255,255,255,0.08);
+    --accent: #4fb3ff;
+    --accent-2: #78c9ff;
+    --shadow: 0 10px 40px rgba(0,0,0,0.4);
+}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', Arial, sans-serif;
-        }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
 
-        body {
-            background: linear-gradient(135deg, #f4f6fb 0%, #eaf0fa 100%);
-            min-height: 100vh;
-            color: #1f2937;
-        }
+body {
+    background: linear-gradient(135deg, var(--bg-1), var(--bg-2));
+    color: var(--text);
+    min-height: 100vh;
+    transition: background 0.4s ease, color 0.4s ease;
+}
 
-        .topbar {
-            background: linear-gradient(90deg, #002b5b, #004080);
-            color: white;
-            padding: 16px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-        }
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.55;
+    z-index: 0;
+}
+body::before {
+    background: #74a9ff;
+    width: 380px;
+    height: 380px;
+    top: -100px;
+    left: -100px;
+}
+body::after {
+    background: #ffcc29;
+    width: 320px;
+    height: 320px;
+    bottom: -120px;
+    right: -100px;
+}
+[data-theme="dark"] body::before { background: #1c4c94; opacity: 0.55; }
+[data-theme="dark"] body::after { background: #b98b17; opacity: 0.35; }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 700;
-            font-size: 16px;
-        }
+/* TOPBAR */
+.topbar {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    background: rgba(255,255,255,0.4);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+[data-theme="dark"] .topbar {
+    background: rgba(15,23,42,0.4);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
 
-        .brand .dot {
-            width: 12px;
-            height: 12px;
-            background: #ffcc29;
-            border-radius: 50%;
-            box-shadow: 0 0 8px #ffcc29;
-        }
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand .logo {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800;
+}
+.brand strong { font-size: 14px; }
+.brand span { font-size: 12px; color: var(--sub); display: block; }
 
-        .topbar a {
-            color: white;
-            text-decoration: none;
-            background: rgba(255,255,255,0.12);
-            padding: 8px 14px;
-            border-radius: 6px;
-            font-size: 13px;
-            transition: 0.2s;
-        }
+.topbar-actions {
+    display: flex; align-items: center; gap: 12px;
+}
 
-        .topbar a:hover {
-            background: rgba(255,255,255,0.25);
-        }
+.icon-btn {
+    width: 38px; height: 38px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 10px;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    cursor: pointer;
+    text-decoration: none; /* Added to prevent underline on anchor tags */
+}
+.icon-btn:hover { transform: translateY(-1px); }
 
-        .hero {
-            text-align: center;
-            padding: 40px 20px 30px;
-        }
+.avatar {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ffcc29, #ff9500);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+}
 
-        .hero h1 {
-            font-size: 26px;
-            font-weight: 700;
-            margin-bottom: 6px;
-            color: #002b5b;
-        }
+/* HERO */
+.hero {
+    position: relative;
+    z-index: 3;
+    text-align: center;
+    padding: 60px 24px 30px;
+}
+.hero h1 {
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+.hero p {
+    color: var(--sub);
+    font-size: 15px;
+    margin-top: 6px;
+}
 
-        .hero p {
-            color: #555;
-            font-size: 14px;
-        }
+.search-shell {
+    margin: 30px auto 0;
+    max-width: 640px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(20px);
+    border-radius: 999px;
+}
+.search-shell input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 15px;
+    color: var(--text);
+}
+.search-shell button {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-weight: 600;
+    cursor: pointer;
+}
 
-        .container {
-            max-width: 520px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow:
-                0 6px 18px rgba(0,30,80,0.08),
-                0 2px 4px rgba(0,30,80,0.04);
-        }
+.container {
+    position: relative;
+    z-index: 3;
+    max-width: 1200px;
+    margin: 40px auto 60px;
+    padding: 0 24px;
+}
 
-        label {
-            display: block;
-            font-weight: 600;
-            margin-top: 16px;
-            font-size: 13px;
-            color: #1f2937;
-        }
+.section-title {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 18px;
+}
+.section-title h2 { font-size: 18px; font-weight: 700; }
+.section-title span { font-size: 13px; color: var(--sub); }
 
-        input,
-        select {
-            width: 100%;
-            padding: 12px 14px;
-            margin-top: 6px;
-            border: 1px solid #dbe2ee;
-            border-radius: 8px;
-            font-size: 14px;
-            background: #fafbfd;
-            transition: 0.2s;
-        }
+.agents {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+}
 
-        input:focus,
-        select:focus {
-            outline: none;
-            border-color: #0067b8;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(0,103,184,0.15);
-        }
+.agent {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 22px;
+    backdrop-filter: blur(20px);
+    box-shadow: var(--shadow);
+    transition: 0.25s;
+    cursor: pointer;
+    position: relative;
+}
 
-        button {
-            width: 100%;
-            padding: 14px;
-            margin-top: 22px;
-            background: linear-gradient(90deg, #0067b8, #003a75);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 15px;
-            transition: 0.2s;
-        }
+.agent:hover {
+    transform: translateY(-4px);
+}
 
-        button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 14px rgba(0,103,184,0.25);
-        }
+.agent .icon {
+    width: 46px; height: 46px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    margin-bottom: 16px;
+}
 
-        button:disabled {
-            background: #aaa;
-            cursor: not-allowed;
-        }
+.agent h3 { font-size: 15px; font-weight: 700; }
+.agent p { font-size: 13px; color: var(--sub); margin-top: 4px; }
 
-        .small-note {
-            font-size: 12px;
-            color: #777;
-            margin-top: 6px;
-        }
+.badge {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(0,103,184,0.15);
+    color: var(--accent);
+    font-weight: 600;
+    display: inline-block;
+    margin-top: 12px;
+}
+.badge.soon {
+    background: rgba(0,0,0,0.05);
+    color: var(--sub);
+}
+[data-theme="dark"] .badge.soon { background: rgba(255,255,255,0.06); }
 
-        .result {
-            margin-top: 20px;
-            padding: 16px;
-            background: #f0f0f0;
-            border-radius: 10px;
-            white-space: pre-wrap;
-            display: none;
-            font-size: 13px;
-        }
+.icon-blue   { background: rgba(0,103,184,0.15); color: var(--accent); }
+.icon-purple { background: rgba(128,0,255,0.15); color: #8000ff; }
+.icon-green  { background: rgba(46,125,50,0.15); color: #2e7d32; }
+.icon-amber  { background: rgba(255,193,7,0.15); color: #b26a00; }
+.icon-red    { background: rgba(198,40,40,0.15); color: #c62828; }
+.icon-teal   { background: rgba(0,150,136,0.15); color: #009688; }
 
-        .result.success {
-            background: #e8f6ec;
-            color: #185a27;
-            border: 1px solid #c6ecd1;
-        }
-
-        .result.warning {
-            background: #fff7e1;
-            color: #6d4c00;
-            border: 1px solid #ffe7a5;
-        }
-
-        .result.error {
-            background: #fdeaea;
-            color: #911b1b;
-            border: 1px solid #f6c1c1;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            margin-top: 12px;
-            color: white;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-        }
-
-        .badge.success { background: #2e7d32; }
-        .badge.warning { background: #f57c00; }
-        .badge.error { background: #c62828; }
-
-        .download {
-            display: none;
-            margin-top: 16px;
-            padding: 13px;
-            background: #0e1726;
-            color: white;
-            text-align: center;
-            text-decoration: none;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .download:hover {
-            background: #1d293f;
-        }
-
-        .footer {
-            margin: 40px auto;
-            text-align: center;
-            color: #888;
-            font-size: 12px;
-        }
-
-        .footer a {
-            color: #0067b8;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-    </style>
+.footer {
+    text-align: center;
+    padding: 30px 20px;
+    font-size: 12px;
+    color: var(--sub);
+}
+</style>
 </head>
 
 <body>
 
-
-<!-- TOP NAVIGATION -->
 <div class="topbar">
     <div class="brand">
-        <div class="dot"></div>
-        Dangote Refinery — IT Self-Service
+        <div class="logo">D</div>
+        <div>
+            <strong>Dangote Refinery</strong>
+            <span>IT Self-Service Portal</span>
+        </div>
     </div>
 
-    <a href="/dashboard">Admin Dashboard →</a>
+    <div class="topbar-actions">
+        <div class="icon-btn" onclick="toggleTheme()" title="Toggle theme">🌓</div>
+        
+        <a href="/dashboard" class="icon-btn" title="Dashboard">📊</a>
+        
+        <div class="avatar">H</div>
+    </div>
 </div>
 
-
-<!-- HERO -->
 <div class="hero">
-    <h1>Sharp Printer Access Portal</h1>
-    <p>Register, install, and configure printers in seconds.</p>
+    <h1>Good morning, Hassan 👋</h1>
+    <p>Choose an agent below to get started.</p>
+
+    <div class="search-shell">
+        <span>🔍</span>
+        <input placeholder="Ask AI or search actions, apps, printers...">
+        <button>Ask AI</button>
+    </div>
 </div>
 
-
-<!-- FORM CARD -->
 <div class="container">
 
-    <label>Select Printer / Location</label>
-    <select id="printer">
-        <option value="">Loading printers...</option>
-    </select>
-    <div class="small-note">
-        Choose the Sharp printer closest to the user/location.
+    <div class="section-title">
+        <h2>Available Agents</h2>
+        <span>Powered by Hermes AI</span>
     </div>
 
+    <div class="agents">
 
-    <label>Full Name</label>
-    <input id="name" placeholder="e.g. Hassan Abdulmalik">
+        <div class="agent" onclick="location.href='/portal'">
+            <div class="icon icon-blue">🖨️</div>
+            <h3>Printer Agent</h3>
+            <p>Register, install, and configure Sharp printers automatically.</p>
+            <span class="badge">Available</span>
+        </div>
 
+        <div class="agent" onclick="alert('Coming soon')">
+            <div class="icon icon-purple">📦</div>
+            <h3>Software Agent</h3>
+            <p>Install approved apps like Office, Teams, and SAP GUI.</p>
+            <span class="badge soon">Coming soon</span>
+        </div>
 
-    <label>User Code (5-8 digits)</label>
-    <input id="code" placeholder="e.g. 34451">
+        <div class="agent" onclick="alert('Coming soon')">
+            <div class="icon icon-green">💻</div>
+            <h3>PC Setup Agent</h3>
+            <p>Automate new laptop provisioning and configuration.</p>
+            <span class="badge soon">Coming soon</span>
+        </div>
 
+        <div class="agent" onclick="alert('Coming soon')">
+            <div class="icon icon-amber">🔐</div>
+            <h3>Access Agent</h3>
+            <p>Request AD, VPN, SAP, and shared drive access.</p>
+            <span class="badge soon">Coming soon</span>
+        </div>
 
-    <label>Email Address</label>
-    <input id="email" placeholder="e.g. hassan@dangote.com">
+        <div class="agent" onclick="alert('Coming soon')">
+            <div class="icon icon-red">🚀</div>
+            <h3>Onboarding Agent</h3>
+            <p>Provision account, email, laptop, and printer on day 1.</p>
+            <span class="badge soon">Coming soon</span>
+        </div>
 
+        <div class="agent" onclick="alert('AI Assistant coming')">
+            <div class="icon icon-teal">🤖</div>
+            <h3>Hermes AI Assistant</h3>
+            <p>Talk to IT in plain English — request anything.</p>
+            <span class="badge soon">Preview</span>
+        </div>
 
-    <button id="submitBtn" onclick="submitRequest()">
-        Request Printer Access
-    </button>
-
-
-    <div class="result" id="result"></div>
-
-
-    <div id="badgeArea"></div>
-
-
-    <a class="download" id="download">
-        Download Printer Installer
-    </a>
-
+    </div>
 </div>
 
-
-<!-- FOOTER -->
 <div class="footer">
-    <p>Sharp Printer Agent v1.0</p>
-    <p>Built by <a href="#">Hassan Abdulmalik</a></p>
+    IT Self-Service Portal · Powered by Hermes v0.1 · Printer Agent v1.0<br>
+    Built by Hassan Abdulmalik — Dangote Petroleum Refinery
 </div>
-
 
 <script>
-
-async function loadPrinters() {
-
-    const printerSelect =
-        document.getElementById("printer");
-
-    try {
-
-        const response = await fetch("/api/printers");
-        const printers = await response.json();
-
-        printerSelect.innerHTML = "";
-
-        if (!printers || printers.length === 0) {
-            const option = document.createElement("option");
-            option.value = "";
-            option.textContent = "No printers available";
-            printerSelect.appendChild(option);
-            return;
-        }
-
-        const defaultOption = document.createElement("option");
-        defaultOption.value = "";
-        defaultOption.textContent = "Select a printer";
-        printerSelect.appendChild(defaultOption);
-
-        printers.forEach(function(printer) {
-            const option = document.createElement("option");
-            option.value = printer.id;
-            option.textContent = printer.name + " — " + printer.location;
-            printerSelect.appendChild(option);
-        });
-
-    } catch (error) {
-
-        printerSelect.innerHTML = "";
-
-        const option = document.createElement("option");
-        option.value = "";
-        option.textContent = "Failed to load printers";
-
-        printerSelect.appendChild(option);
-
-        console.error("Failed to load printers:", error);
+function applyTheme(theme) {
+    if (theme === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+    } else {
+        document.documentElement.removeAttribute("data-theme");
     }
+    localStorage.setItem("theme", theme);
 }
 
-
-function setResult(message, statusClass) {
-
-    const resultDiv =
-        document.getElementById("result");
-
-    resultDiv.classList.remove("success", "warning", "error");
-    resultDiv.style.display = "block";
-
-    if (statusClass) {
-        resultDiv.classList.add(statusClass);
-    }
-
-    resultDiv.innerText = message;
+function toggleTheme() {
+    const current = document.documentElement.getAttribute("data-theme");
+    applyTheme(current === "dark" ? "light" : "dark");
 }
 
-
-function setBadge(status) {
-
-    const badgeArea =
-        document.getElementById("badgeArea");
-
-    badgeArea.innerHTML = "";
-
-    if (!status) return;
-
-    let cls = "success";
-
-    if (
-        status === "FAILED" ||
-        status === "TIMEOUT" ||
-        status === "LOGIN_FAILED" ||
-        status === "UNKNOWN"
-    ) {
-        cls = "error";
-    } else if (status === "ALREADY_EXISTS") {
-        cls = "warning";
+(function() {
+    const saved = localStorage.getItem("theme");
+    if (saved) {
+        applyTheme(saved);
+    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        applyTheme("dark");
     }
-
-    badgeArea.innerHTML =
-        `<span class="badge ${cls}">${status}</span>`;
-}
-
-
-async function submitRequest() {
-
-    const printer =
-        document.getElementById("printer").value;
-
-    const name =
-        document.getElementById("name").value.trim();
-
-    const code =
-        document.getElementById("code").value.trim();
-
-    const email =
-        document.getElementById("email").value.trim();
-
-    const downloadLink =
-        document.getElementById("download");
-
-    const submitBtn =
-        document.getElementById("submitBtn");
-
-
-    downloadLink.style.display = "none";
-    setBadge(null);
-
-    if (!printer) {
-        setResult("Please select a printer.", "error");
-        return;
-    }
-
-    if (!name) {
-        setResult("Please enter full name.", "error");
-        return;
-    }
-
-    if (!code) {
-        setResult("Please enter user code.", "error");
-        return;
-    }
-
-    if (!email) {
-        setResult("Please enter email.", "error");
-        return;
-    }
-
-
-    submitBtn.disabled = true;
-    submitBtn.innerText = "Processing...";
-
-    setResult("Submitting registration request...", null);
-
-
-    try {
-
-        const res = await fetch("/api/register", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                printer: printer,
-                name: name,
-                user_number: code,
-                email: email
-            })
-        });
-
-        const data = await res.json();
-
-        let statusClass = "success";
-
-        if (data.status === "ALREADY_EXISTS") {
-            statusClass = "warning";
-        } else if (
-            data.status === "FAILED" ||
-            data.status === "TIMEOUT" ||
-            data.status === "LOGIN_FAILED" ||
-            data.status === "UNKNOWN"
-        ) {
-            statusClass = "error";
-        }
-
-        setResult(data.message, statusClass);
-        setBadge(data.status);
-
-        downloadLink.href = data.download;
-        downloadLink.innerText = "Download Printer Installer";
-        downloadLink.style.display = "block";
-
-    } catch (error) {
-
-        setResult(
-            "Server error. Please check if the backend is running.",
-            "error"
-        );
-
-        setBadge("FAILED");
-
-        console.error("Request error:", error);
-
-    } finally {
-
-        submitBtn.disabled = false;
-        submitBtn.innerText = "Request Printer Access";
-    }
-}
-
-
-window.onload = loadPrinters;
-
+})();
 </script>
 
 </body>
 </html>
+
+``` 

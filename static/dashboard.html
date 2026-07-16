@@ -1,516 +1,882 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Dangote Refinery - Printer Agent Dashboard</title>
+<meta charset="UTF-8">
+<title>PrinterAgent — Operations Center</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-    https://fonts.googleapis.com
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
-    400;500;600;700&display=swap"
-        rel="stylesheet">
+<style>
 
-    <style>
+/* ================================
+   THEME VARIABLES
+   ================================ */
+:root {
+    --bg: #f5f7fb;
+    --panel: #ffffff;
+    --border: #eef2f7;
+    --text: #0f172a;
+    --sub: #64748b;
+    --brand: #0067b8;
+    --brand-2: #0087ff;
+    --success: #2e7d32;
+    --warning: #f57c00;
+    --error: #c62828;
+    --purple: #8000ff;
+    --shadow: 0 6px 20px rgba(15,23,42,0.05);
+    --radius: 16px;
+}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', Arial, sans-serif;
-        }
+[data-theme="dark"] {
+    --bg: #0b1220;
+    --panel: #131c30;
+    --border: #1e293b;
+    --text: #f8fafc;
+    --sub: #94a3b8;
+    --brand: #4fb3ff;
+    --brand-2: #78c9ff;
+    --success: #4ade80;
+    --warning: #fbbf24;
+    --error: #f87171;
+    --purple: #c084fc;
+    --shadow: 0 6px 20px rgba(0,0,0,0.4);
+}
 
-        body {
-            background: linear-gradient(135deg, #f4f6fb 0%, #eaf0fa 100%);
-            min-height: 100vh;
-            color: #1f2937;
-        }
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
 
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    transition: background 0.4s ease, color 0.4s ease;
+}
 
-        /* TOP NAV */
+/* ================================
+   TOPBAR
+   ================================ */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 32px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    transition: background 0.4s ease;
+}
 
-        .topbar {
-            background: linear-gradient(90deg, #002b5b, #004080);
-            color: white;
-            padding: 16px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-        }
+.brand { display:flex; align-items:center; gap:12px; }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 700;
-            font-size: 16px;
-        }
+.brand .logo {
+    width:34px; height:34px;
+    border-radius:10px;
+    background: linear-gradient(135deg, var(--brand), var(--brand-2));
+    color:white;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800;
+}
 
-        .brand .dot {
-            width: 12px;
-            height: 12px;
-            background: #ffcc29;
-            border-radius: 50%;
-            box-shadow: 0 0 8px #ffcc29;
-        }
+.brand strong { font-size:14px; }
+.brand span { font-size:12px; color:var(--sub); display:block; }
 
-        .topbar a {
-            color: white;
-            text-decoration: none;
-            background: rgba(255,255,255,0.12);
-            padding: 8px 14px;
-            border-radius: 6px;
-            font-size: 13px;
-            transition: 0.2s;
-        }
+.topbar-actions { display:flex; align-items:center; gap:12px; }
 
-        .topbar a:hover {
-            background: rgba(255,255,255,0.25);
-        }
+.topbar-actions a {
+    font-size:13px;
+    text-decoration:none;
+    color: var(--brand);
+    font-weight:600;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: rgba(0,103,184,0.08);
+}
 
-
-        /* HERO */
-
-        .hero {
-            text-align: center;
-            padding: 30px 20px 10px;
-        }
-
-        .hero h1 {
-            font-size: 24px;
-            font-weight: 700;
-            color: #002b5b;
-        }
-
-        .hero p {
-            color: #555;
-            font-size: 14px;
-        }
-
-
-        /* WRAPPER */
-
-        .wrapper {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-
-
-        /* STAT CARDS */
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 14px;
-            margin-bottom: 24px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 18px 22px;
-            box-shadow:
-                0 4px 10px rgba(0,30,80,0.06),
-                0 1px 2px rgba(0,30,80,0.03);
-            border-left: 4px solid #0067b8;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .card span {
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #777;
-        }
-
-        .card strong {
-            font-size: 22px;
-            color: #1f2937;
-        }
-
-        .card.success { border-left-color: #2e7d32; }
-        .card.warning { border-left-color: #f57c00; }
-        .card.failed { border-left-color: #c62828; }
-
-        .card.success strong { color: #2e7d32; }
-        .card.warning strong { color: #f57c00; }
-        .card.failed strong { color: #c62828; }
+.icon-btn {
+    width:34px; height:34px;
+    border-radius:10px;
+    background: var(--panel);
+    border:1px solid var(--border);
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    font-size:15px;
+}
+.icon-btn:hover { transform: translateY(-1px); }
 
 
-        /* CONTROLS */
+/* ================================
+   LAYOUT
+   ================================ */
+.wrap { padding:24px 32px; display:grid; gap:24px; }
+.grid { display:grid; gap:20px; }
+.cols-4 { grid-template-columns: repeat(4, 1fr); }
+.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.cols-2 { grid-template-columns: 1fr 1fr; }
 
-        .controls {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 14px;
-        }
-
-        input,
-        select {
-            padding: 11px 14px;
-            border: 1px solid #dbe2ee;
-            border-radius: 8px;
-            background: white;
-            font-size: 14px;
-            flex: 1;
-            min-width: 180px;
-        }
-
-        input:focus,
-        select:focus {
-            outline: none;
-            border-color: #0067b8;
-            box-shadow: 0 0 0 3px rgba(0,103,184,0.15);
-        }
-
-        button {
-            padding: 11px 18px;
-            background: linear-gradient(90deg, #0067b8, #003a75);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 13px;
-        }
-
-        button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 10px rgba(0,103,184,0.25);
-        }
+@media (max-width:1100px) {
+    .cols-4 { grid-template-columns: repeat(2,1fr); }
+    .cols-3 { grid-template-columns: 1fr; }
+    .cols-2 { grid-template-columns: 1fr; }
+}
 
 
-        /* TABLE */
+/* ================================
+   KPI CARDS
+   ================================ */
+.kpi {
+    background: var(--panel);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    border:1px solid var(--border);
+    box-shadow: var(--shadow);
+    position: relative;
+    transition: background 0.4s ease;
+}
 
-        .table-wrapper {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow:
-                0 4px 12px rgba(0,30,80,0.06),
-                0 1px 2px rgba(0,30,80,0.03);
-        }
+.kpi .label {
+    font-size:12px;
+    color: var(--sub);
+    text-transform:uppercase;
+    letter-spacing:0.6px;
+    font-weight:700;
+}
 
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            font-size: 13px;
-        }
+.kpi .value {
+    font-size: 26px;
+    font-weight:800;
+    margin-top:4px;
+}
 
-        thead {
-            background: #f1f5fa;
-            color: #1f2937;
-        }
+.kpi .sub {
+    font-size:12px;
+    color: var(--sub);
+    margin-top:6px;
+}
 
-        th, td {
-            padding: 12px 14px;
-            text-align: left;
-            border-bottom: 1px solid #eef2f7;
-            vertical-align: top;
-        }
+.kpi .icon {
+    position:absolute;
+    top:18px; right:18px;
+    width:34px; height:34px;
+    border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:15px;
+}
 
-        tr:hover {
-            background: #fafcff;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            color: white;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-        }
-
-        .badge.success { background: #2e7d32; }
-        .badge.warning { background: #f57c00; }
-        .badge.error { background: #c62828; }
-        .badge.unknown { background: #757575; }
-
-        .details {
-            max-width: 320px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            color: #555;
-        }
-
-        .empty {
-            padding: 30px;
-            text-align: center;
-            color: #888;
-            font-size: 14px;
-        }
+.b1 { background: rgba(0,103,184,.12); color: var(--brand); }
+.b2 { background: rgba(46,125,50,.12); color: var(--success); }
+.b3 { background: rgba(198,40,40,.12); color: var(--error); }
+.b4 { background: rgba(128,0,255,.12); color: var(--purple); }
+.b5 { background: rgba(255,193,7,.15); color: #b26a00; }
+.b6 { background: rgba(0,150,136,.12); color: #009688; }
 
 
-        /* FOOTER */
+/* ================================
+   PANELS
+   ================================ */
+.panel {
+    background: var(--panel);
+    border-radius: var(--radius);
+    padding: 20px;
+    border:1px solid var(--border);
+    box-shadow: var(--shadow);
+    transition: background 0.4s ease;
+}
 
-        .footer {
-            margin: 40px auto;
-            text-align: center;
-            color: #888;
-            font-size: 12px;
-        }
+.panel h3 {
+    font-size:14px;
+    font-weight:700;
+    margin-bottom:12px;
+    display:flex; justify-content:space-between; align-items:center;
+}
 
-        .footer a {
-            color: #0067b8;
-            text-decoration: none;
-            font-weight: 600;
-        }
+.panel h3 span {
+    font-size:11px;
+    color: var(--sub);
+    font-weight:500;
+}
 
-    </style>
+
+/* ================================
+   TABLE
+   ================================ */
+.table-tools { display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+
+.table-tools input,
+.table-tools select {
+    padding:8px 12px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    font-size:13px;
+}
+
+.table-tools button {
+    padding:8px 12px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    cursor:pointer;
+    font-weight:600;
+    font-size:12px;
+}
+
+.table-wrap { overflow:auto; border-radius:10px; }
+table { width:100%; border-collapse:collapse; font-size:12.5px; }
+th, td { padding:10px; text-align:left; border-bottom:1px solid var(--border); }
+th {
+    background: var(--border);
+    text-transform:uppercase;
+    font-size:11px;
+    letter-spacing:.5px;
+    cursor:pointer;
+}
+tr:hover { background: rgba(0,103,184,.04); }
+
+
+/* ================================
+   BADGES
+   ================================ */
+.badge {
+    display:inline-block;
+    padding:3px 9px;
+    border-radius:999px;
+    font-size:11px;
+    color:white;
+    font-weight:600;
+}
+.b-success  { background: var(--success); }
+.b-warning  { background: var(--warning); }
+.b-error    { background: var(--error); }
+.b-unknown  { background: #64748b; }
+
+
+/* ================================
+   PAGINATION
+   ================================ */
+.pager {
+    display:flex;
+    justify-content:space-between;
+    margin-top:10px;
+    font-size:12px;
+    color:var(--sub);
+    align-items:center;
+}
+.pager button {
+    padding:6px 10px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    cursor:pointer;
+    background: var(--panel);
+    color: var(--text);
+}
+
+
+/* ================================
+   HEALTH
+   ================================ */
+.health {
+    display:flex;
+    justify-content:space-between;
+    padding:8px 0;
+    border-bottom:1px solid var(--border);
+    font-size:13px;
+}
+.health:last-child { border:none; }
+.dot-ok  { color: var(--success); }
+.dot-warn{ color: var(--warning); }
+.dot-err { color: var(--error); }
+
+.quick a {
+    display:block;
+    padding:10px;
+    background: var(--border);
+    border-radius:10px;
+    font-size:12.5px;
+    font-weight:600;
+    color: var(--brand);
+    margin-bottom:8px;
+    text-decoration:none;
+}
+
+
+/* ================================
+   FEED
+   ================================ */
+.feed-item {
+    display:flex;
+    gap:10px;
+    padding:8px 0;
+    border-bottom:1px solid var(--border);
+    font-size:13px;
+}
+.feed-item:last-child { border-bottom:none; }
+
+.feed-item .avatar {
+    width:30px; height:30px;
+    border-radius:50%;
+    background: linear-gradient(135deg,#ffcc29,#ff9500);
+    color:white;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700;
+}
+.feed-item .body { flex:1; }
+.feed-item .time { font-size:11px; color:var(--sub); }
+</style>
 </head>
-
 <body>
 
 
-<!-- TOPBAR -->
+<!-- ================================ TOPBAR ================================ -->
 <div class="topbar">
-
     <div class="brand">
-        <div class="dot"></div>
-        Dangote Refinery — IT Self-Service
+        <div class="logo">D</div>
+        <div>
+            <strong>Dangote Refinery</strong>
+            <span>Printer Agent — Operations Center</span>
+        </div>
+    </div>
+    <div class="topbar-actions">
+        <a href="/">Home</a>
+        <a href="/portal">Portal</a>
+        <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">🌓</button>
+        <span style="font-size:12px;color:var(--sub)">Live · <span id="lastUpdate">--:--</span></span>
+    </div>
+</div>
+
+
+<div class="wrap">
+
+
+<!-- ================================ KPI ================================ -->
+<div class="grid cols-4">
+    <div class="kpi"><div class="icon b1">📥</div><div class="label">Total Requests</div><div class="value" id="k_total">0</div><div class="sub">All time</div></div>
+    <div class="kpi"><div class="icon b2">✅</div><div class="label">Successful</div><div class="value" id="k_success">0</div><div class="sub" id="k_success_rate">0%</div></div>
+    <div class="kpi"><div class="icon b3">❌</div><div class="label">Failed</div><div class="value" id="k_failed">0</div><div class="sub">Includes timeouts</div></div>
+    <div class="kpi"><div class="icon b4">🖨</div><div class="label">Active Printers</div><div class="value" id="k_printers">0</div><div class="sub">From inventory</div></div>
+    <div class="kpi"><div class="icon b5">⏱</div><div class="label">Avg Registration Time</div><div class="value" id="k_avg">--</div><div class="sub">Rolling</div></div>
+<div class="kpi">
+    <div class="icon b6">🟢</div>
+    <div class="label">Online Printers</div>
+    <div class="value" id="k_online">0</div>
+    <div class="sub">Estimate</div>
+</div>
+`</div>
+
+
+<!-- ================================ CHARTS ================================ -->
+<div class="grid cols-3">
+    <div class="panel"><h3>Requests Per Day <span>Last 14 days</span></h3><canvas id="chartRequests" height="140"></canvas></div>
+    <div class="panel"><h3>Success vs Failure <span>Rate</span></h3><canvas id="chartSuccess" height="140"></canvas></div>
+    <div class="panel"><h3>Failure Reasons <span>Top errors</span></h3><canvas id="chartFailures" height="140"></canvas></div>
+</div>
+
+<div class="grid cols-2">
+    <div class="panel"><h3>Most Used Printers</h3><canvas id="chartPrinters" height="120"></canvas></div>
+    <div class="panel"><h3>Most Active Departments</h3><canvas id="chartDepts" height="120"></canvas></div>
+</div>
+
+
+<!-- ================================ TABLE + FEED ================================ -->
+<div class="grid cols-3">
+
+    <div class="panel" style="grid-column: span 2;">
+        <h3>Recent Registrations <span>Live from /api/logs</span></h3>
+
+        <div class="table-tools">
+            <input id="search" placeholder="Search user, printer, dept..." oninput="renderTable()">
+            <select id="filter" onchange="renderTable()">
+                <option value="">All Statuses</option>
+                <option>REGISTRATION_SUCCESS</option>
+                <option>ALREADY_EXISTS</option>
+                <option>LOGIN_FAILED</option>
+                <option>TIMEOUT</option>
+                <option>REGISTRATION_FAILED</option>
+                <option>UNKNOWN</option>
+            </select>
+            <button onclick="exportCSV()">⬇ CSV</button>
+            <button onclick="exportExcel()">⬇ Excel</button>
+            <button onclick="loadLogs()">🔄 Refresh</button>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th onclick="sortBy('timestamp')">Time</th>
+                        <th onclick="sortBy('name')">User</th>
+                        <th onclick="sortBy('printer_name')">Printer</th>
+                        <th onclick="sortBy('location')">Location</th>
+                        <th onclick="sortBy('status')">Status</th>
+                        <th>Details</th>
+                        <th>Ticket</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+            </table>
+        </div>
+
+        <div class="pager">
+            <div>Page <span id="pageN">1</span></div>
+            <div>
+                <button onclick="prevPage()">Prev</button>
+                <button onclick="nextPage()">Next</button>
+            </div>
+        </div>
     </div>
 
-    /
+
+    <div class="panel">
+        <h3>Live Activity Feed</h3>
+        <div id="feed"></div>
+    </div>
 
 </div>
 
 
-<!-- HERO -->
-<div class="hero">
-    <h1>Printer Agent — Admin Dashboard</h1>
-    <p>Real-time visibility into printer registrations and installations</p>
-</div>
+<!-- ================================ INSIGHT PANELS ================================ -->
+<div class="grid cols-3">
 
-
-<div class="wrapper">
-
-
-    <!-- STAT CARDS -->
-    <div class="stats">
-        <div class="card">
-            <span>Total Requests</span>
-            <strong id="total">0</strong>
-        </div>
-
-        <div class="card success">
-            <span>Successful</span>
-            <strong id="success">0</strong>
-        </div>
-
-        <div class="card warning">
-            <span>Already Exists</span>
-            <strong id="exists">0</strong>
-        </div>
-
-        <div class="card failed">
-            <span>Failed</span>
-            <strong id="failed">0</strong>
-        </div>
+    <div class="panel">
+        <h3>System Health</h3>
+        <div class="health"><span>FastAPI Backend</span><span class="dot-ok">● Operational</span></div>
+        <div class="health"><span>Playwright Agent</span><span class="dot-ok">● Running</span></div>
+        <div class="health"><span>Logger</span><span class="dot-ok">● Writing</span></div>
+        <div class="health"><span>Printer Reachability</span><span class="dot-warn">● Partial</span></div>
+        <div class="health"><span>FreshService API</span><span class="dot-ok">● Connected</span></div>
     </div>
 
-
-    <!-- FILTERS -->
-    <div class="controls">
-
-        <input
-            id="search"
-            placeholder="Search by user, printer, or location..."
-            oninput="renderTable()">
-
-        <select id="statusFilter" onchange="renderTable()">
-            <option value="">All Statuses</option>
-            <option value="SUCCESS">SUCCESS</option>
-            <option value="ALREADY_EXISTS">ALREADY_EXISTS</option>
-            <option value="TIMEOUT">TIMEOUT</option>
-            <option value="LOGIN_FAILED">LOGIN_FAILED</option>
-            <option value="FAILED">FAILED</option>
-            <option value="UNKNOWN">UNKNOWN</option>
-        </select>
-
-        <button onclick="loadLogs()">Refresh</button>
-
+    <div class="panel">
+        <h3>Queue Status</h3>
+        <div class="health"><span>Pending Requests</span><span>0</span></div>
+        <div class="health"><span>Active Automation</span><span>1</span></div>
+        <div class="health"><span>Retries</span><span>0</span></div>
+        <div class="health"><span>Longest Wait</span><span>4s</span></div>
     </div>
 
-
-    <!-- TABLE -->
-    <div class="table-wrapper">
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Time</th>
-                    <th>User</th>
-                    <th>Code</th>
-                    <th>Printer</th>
-                    <th>Location</th>
-                    <th>Status</th>
-                    <th>Details</th>
-                </tr>
-            </thead>
-
-            <tbody id="tbody">
-            </tbody>
-        </table>
-
-        <div id="emptyState" class="empty" style="display:none;">
-            No registration logs available yet.
-        </div>
-
+    <div class="panel">
+        <h3>AI Recommendations</h3>
+        <p style="font-size:12.5px; color:var(--sub);">Hermes recommends preloading Sharp drivers via Intune to reduce failures.</p>
+        <p style="font-size:12.5px; color:var(--sub); margin-top:6px;">Suggested action: Verify DPRP IT Support group in FreshService weekly.</p>
     </div>
-
 
 </div>
 
 
-<!-- FOOTER -->
-<div class="footer">
-    <p>Sharp Printer Agent v1.0</p>
-    <p>Built by Hassan Abdulmalik</p>
+<div class="grid cols-3">
+    <div class="panel">
+        <h3>Printer Status</h3>
+        <div id="printerStatus"></div>
+    </div>
+
+    <div class="panel">
+        <h3>Recent Failures</h3>
+        <div id="recentFailures"></div>
+    </div>
+
+    <div class="panel quick">
+        <h3>Quick Actions</h3>
+        <a href="/portal">🖨 Request Printer</a>
+        <a href="/">🏠 Home Portal</a>
+        <a href="/api/logs">📊 Raw Logs API</a>
+        <a href="/api/printers">🧾 Printer Inventory API</a>
+        <a href="https://dangote.freshservice.com/">🎫 Open FreshService</a>
+    </div>
+</div>
+
 </div>
 
 
 <script>
 
+const FS_DOMAIN = "dangote.freshservice.com";
+
 let allLogs = [];
-
-function badgeClass(status) {
-
-    if (status === "SUCCESS") return "success";
-    if (status === "ALREADY_EXISTS") return "warning";
-
-    if (
-        status === "FAILED" ||
-        status === "TIMEOUT" ||
-        status === "LOGIN_FAILED"
-    ) {
-        return "error";
-    }
-
-    return "unknown";
-}
-
-
-function formatTime(ts) {
-
-    try {
-        const d = new Date(ts);
-        return d.toLocaleString();
-    } catch (e) {
-        return ts;
-    }
-}
-
-
-function renderTable() {
-
-    const tbody = document.getElementById("tbody");
-    const emptyState = document.getElementById("emptyState");
-
-    const search = document.getElementById("search").value.trim().toLowerCase();
-    const statusFilter = document.getElementById("statusFilter").value;
-
-    tbody.innerHTML = "";
-
-    let totalCount = 0;
-    let successCount = 0;
-    let existsCount = 0;
-    let failedCount = 0;
-
-    const filtered = allLogs.filter(row => {
-
-        const matchSearch =
-            !search ||
-            (row.name || "").toLowerCase().includes(search) ||
-            (row.printer_name || "").toLowerCase().includes(search) ||
-            (row.location || "").toLowerCase().includes(search);
-
-        const matchStatus =
-            !statusFilter ||
-            row.status === statusFilter;
-
-        return matchSearch && matchStatus;
-    });
-
-
-    filtered.slice().reverse().forEach(row => {
-
-        totalCount += 1;
-
-        if (row.status === "SUCCESS") {
-            successCount += 1;
-        } else if (row.status === "ALREADY_EXISTS") {
-            existsCount += 1;
-        } else if (
-            row.status === "FAILED" ||
-            row.status === "TIMEOUT" ||
-            row.status === "LOGIN_FAILED"
-        ) {
-            failedCount += 1;
-        }
-
-
-        const tr = document.createElement("tr");
-
-        tr.innerHTML = `
-            <td>${formatTime(row.timestamp)}</td>
-            <td>${row.name || ""}</td>
-            <td>${row.code || ""}</td>
-            <td>${row.printer_name || ""}</td>
-            <td>${row.location || ""}</td>
-            <td>
-                <span class="badge ${badgeClass(row.status)}">
-                    ${row.status || ""}
-                </span>
-            </td>
-            <td class="details" title="${(row.details || '').replace(/"/g, '&quot;')}">
-                ${(row.details || "").substring(0, 100)}
-            </td>
-        `;
-
-        tbody.appendChild(tr);
-    });
-
-
-    document.getElementById("total").innerText = totalCount;
-    document.getElementById("success").innerText = successCount;
-    document.getElementById("exists").innerText = existsCount;
-    document.getElementById("failed").innerText = failedCount;
-
-
-    if (totalCount === 0) {
-        emptyState.style.display = "block";
-    } else {
-        emptyState.style.display = "none";
-    }
-}
+let allPrinters = [];
+let printerStatuses = [];
+let page = 1;
+let pageSize = 8;
+let sortKey = "timestamp";
+let sortDir = -1;
+let charts = {};
 
 
 async function loadLogs() {
+    const res = await fetch("/api/logs");
+    allLogs = await res.json();
 
-    try {
-
-        const res = await fetch("/api/logs");
-        const data = await res.json();
-
-        allLogs = data;
-
-        renderTable();
-
-    } catch (e) {
-        console.error("Failed to load logs:", e);
+    if(printerStatuses.length > 0){
+        render();
     }
 }
 
 
-window.onload = function() {
-    loadLogs();
-    setInterval(loadLogs, 10000);
-};
+async function loadPrinters() {
+
+    const res =
+        await fetch("/api/printer-status");
+
+    printerStatuses =
+        await res.json();
+
+    renderPrinterStatus();
+
+    updateKPIs();
+}
+
+function render() {
+    updateKPIs();
+    renderTable();
+    renderCharts();
+    renderFeed();
+    renderRecentFailures();
+}
+function updateKPIs() {
+
+    const total = allLogs.length;
+
+    const success = allLogs.filter(
+        l => l.status === "REGISTRATION_SUCCESS"
+    ).length;
+
+    const failed = allLogs.filter(
+        l => [
+            "REGISTRATION_FAILED",
+            "LOGIN_FAILED",
+            "TIMEOUT",
+            "UNKNOWN"
+        ].includes(l.status)
+    ).length;
+
+    // Printer Monitoring Metrics
+    const totalPrinters = printerStatuses.length;
+
+    const onlinePrinters = printerStatuses.filter(
+        p => p.status === "reachable"
+    ).length;
+
+    const offlinePrinters = printerStatuses.filter(
+        p => p.status === "offline"
+    ).length;
+
+    const slowPrinters = printerStatuses.filter(
+        p => p.status === "timeout"
+    ).length;
+
+    // Update KPI Cards
+    document.getElementById("k_total").innerText =
+        total;
+
+    document.getElementById("k_success").innerText =
+        success;
+
+    document.getElementById("k_failed").innerText =
+        failed;
+
+  document.getElementById("k_printers").innerText =
+    printerStatuses.length;
+
+document.getElementById("k_online").innerText =
+    printerStatuses.filter(
+        p => p.status === "reachable"
+    ).length;
+
+    document.getElementById("k_avg").innerText =
+        "12s";
+
+    const rate =
+        total > 0
+            ? Math.round((success / total) * 100)
+            : 0;
+
+    document.getElementById("k_success_rate").innerText =
+        rate + "% success rate";
+
+    // Optional console values for troubleshooting
+    console.log({
+        totalPrinters,
+        onlinePrinters,
+        offlinePrinters,
+        slowPrinters
+    });
+}
+
+
+
+/* ==== TABLE ==== */
+function renderTable() {
+    const search = document.getElementById("search").value.toLowerCase();
+    const filter = document.getElementById("filter").value;
+    const tbody = document.getElementById("tbody");
+
+    let rows = allLogs
+        .filter(r => !filter || r.status === filter)
+        .filter(r =>
+            !search ||
+            (r.name||"").toLowerCase().includes(search) ||
+            (r.printer_name||"").toLowerCase().includes(search) ||
+            (r.location||"").toLowerCase().includes(search)
+        );
+
+    rows.sort((a,b) => (a[sortKey]||"") > (b[sortKey]||"") ? sortDir : -sortDir);
+
+    const start = (page-1)*pageSize;
+    const paged = rows.slice(start, start+pageSize);
+
+    tbody.innerHTML = paged.map(r => `
+        <tr>
+            <td>${new Date(r.timestamp).toLocaleString()}</td>
+            <td>${r.name || ""}</td>
+            <td>${r.printer_name || ""}</td>
+            <td>${r.location || ""}</td>
+            <td><span class="badge ${badge(r.status)}">${r.status || ""}</span></td>
+            <td>${(r.details||"").slice(0,90)}</td>
+                <td>
+        ${r.ticket_id
+        ? `https://dangote.freshservice.com/a/tickets/${r.ticket_id}
+            SR-${r.ticket_id}
+        </a>`
+        : "-"
+        }
+        </td>
+        </tr>
+    `).join("") ||
+    `<tr><td colspan=7 style="padding:20px;text-align:center;color:var(--sub);">No records</td></tr>`;
+
+    document.getElementById("pageN").innerText = page;
+}
+
+
+function badge(s) {
+    if (s === "REGISTRATION_SUCCESS") return "b-success";
+    if (s === "ALREADY_EXISTS") return "b-warning";
+    if (["REGISTRATION_FAILED","LOGIN_FAILED","TIMEOUT"].includes(s)) return "b-error";
+    return "b-unknown";
+}
+
+function sortBy(key) {
+    if (sortKey === key) sortDir = -sortDir;
+    else { sortKey = key; sortDir = 1; }
+    renderTable();
+}
+
+function prevPage() { if (page>1) { page--; renderTable(); }}
+function nextPage() { page++; renderTable(); }
+
+
+/* ==== EXPORT ==== */
+function exportCSV() {
+    const headers = ["timestamp","name","code","printer_name","location","status","details","ticket_id"];
+    const rows = allLogs.map(l => headers.map(h => `"${(l[h]||"").toString().replace(/"/g,'""')}"`).join(","));
+    const csv = headers.join(",") + "\n" + rows.join("\n");
+    download("PrinterAgent_Logs.csv", csv, "text/csv");
+}
+
+function exportExcel() {
+    const ws = XLSX.utils.json_to_sheet(allLogs);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Logs");
+    XLSX.writeFile(wb, "PrinterAgent_Logs.xlsx");
+}
+
+function download(filename, content, type) {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([content], { type }));
+    a.download = filename;
+    a.click();
+}
+
+
+/* ==== CHARTS ==== */
+function themeAwareColors() {
+    const dark = document.documentElement.getAttribute("data-theme") === "dark";
+    return {
+        text: dark ? "#f8fafc" : "#0f172a",
+        grid: dark ? "rgba(255,255,255,0.06)" : "rgba(15,23,42,0.06)"
+    };
+}
+
+function renderCharts() {
+    const days = {};
+    allLogs.forEach(l => {
+        const d = new Date(l.timestamp).toLocaleDateString();
+        days[d] = (days[d]||0)+1;
+    });
+
+    makeChart("chartRequests", "line", {
+        labels: Object.keys(days),
+        datasets: [{
+            data: Object.values(days),
+            borderColor: "#0067b8",
+            backgroundColor: "rgba(0,103,184,0.15)",
+            fill: true,
+            tension: 0.4
+        }]
+    });
+
+    const success = allLogs.filter(l => l.status === "REGISTRATION_SUCCESS").length;
+    const failed = allLogs.length - success;
+
+    makeChart("chartSuccess", "doughnut", {
+        labels: ["Success","Failed"],
+        datasets: [{
+            data: [success, failed],
+            backgroundColor: ["#2e7d32","#c62828"]
+        }]
+    });
+
+    const fmap = {};
+    allLogs.filter(l => l.status !== "REGISTRATION_SUCCESS").forEach(l => {
+        fmap[l.status] = (fmap[l.status]||0)+1;
+    });
+    makeChart("chartFailures","bar",{
+        labels: Object.keys(fmap),
+        datasets: [{ data: Object.values(fmap), backgroundColor:"#f57c00" }]
+    });
+
+    const pmap = {};
+    allLogs.forEach(l => pmap[l.printer_name] = (pmap[l.printer_name]||0)+1);
+    makeChart("chartPrinters","bar",{
+        labels: Object.keys(pmap),
+        datasets: [{ data: Object.values(pmap), backgroundColor:"#0087ff" }]
+    });
+
+    const dmap = {};
+    allLogs.forEach(l => dmap[l.location] = (dmap[l.location]||0)+1);
+    makeChart("chartDepts","bar",{
+        labels: Object.keys(dmap),
+        datasets: [{ data: Object.values(dmap), backgroundColor:"#8000ff" }]
+    });
+}
+
+function makeChart(id, type, data) {
+    if (charts[id]) charts[id].destroy();
+    const colors = themeAwareColors();
+
+    charts[id] = new Chart(document.getElementById(id), {
+        type, data,
+        options: {
+            plugins: {
+                legend: {
+                    display: type === "doughnut",
+                    labels: { color: colors.text }
+                }
+            },
+            scales: (type==="line"||type==="bar") ? {
+                y: { beginAtZero:true, grid:{color:colors.grid}, ticks:{color:colors.text} },
+                x: { grid:{color:colors.grid}, ticks:{color:colors.text} }
+            } : {}
+        }
+    });
+}
+
+
+/* ==== FEED / FAILURES / PRINTERS ==== */
+function renderFeed() {
+    const feed = document.getElementById("feed");
+    const recent = allLogs.slice(-8).reverse();
+
+    feed.innerHTML = recent.map(l => `
+        <div class="feed-item">
+            <div class="avatar">${(l.name||"?").charAt(0).toUpperCase()}</div>
+            <div class="body">
+                <strong>${l.name}</strong>
+                ${l.status === "REGISTRATION_SUCCESS" ? "registered" : "attempted"} on
+                <strong>${l.printer_name || ""}</strong>
+                <div class="time">${new Date(l.timestamp).toLocaleString()}</div>
+            </div>
+        </div>
+    `).join("") || `<div style="font-size:12px;color:var(--sub);">No activity yet</div>`;
+}
+
+function renderRecentFailures() {
+    const target = document.getElementById("recentFailures");
+    const fails = allLogs.filter(l =>
+        ["REGISTRATION_FAILED","LOGIN_FAILED","TIMEOUT","UNKNOWN"].includes(l.status)
+    ).slice(-4).reverse();
+
+    target.innerHTML = fails.map(l => `
+        <div class="feed-item">
+            <div class="avatar" style="background:#c62828;">✖</div>
+            <div class="body">
+                <strong>${l.name}</strong> → ${l.printer_name}<br>
+                <span class="time">${l.status} · ${new Date(l.timestamp).toLocaleString()}</span>
+            </div>
+        </div>
+    `).join("") || `<div style="font-size:12px;color:var(--sub);">No failures 🎉</div>`;
+}
+function renderPrinterStatus() {
+
+    const target =
+        document.getElementById("printerStatus");
+
+    target.innerHTML =
+        printerStatuses.map(p => {
+
+            let badge = "";
+            let color = "";
+
+           if (p.status === "reachable") {
+    badge = "Reachable";
+    color = "#4ade80";
+}
+else if (p.status === "timeout") {
+    badge = "Slow";
+    color = "#fbbf24";
+}
+else {
+    badge = "Offline";
+    color = "#f87171";
+}return `
+<div class="health">
+    <span>${p.name}</span>
+
+    <span style="color:${color};font-weight:600;">
+        ● ${badge}
+        ${p.response_time ? `(${p.response_time}ms)` : ""}
+    </span>
+</div>
+`;
+        }).join("");
+}
+
+
+/* ==== THEME TOGGLE ==== */
+function applyTheme(theme) {
+    if (theme === "dark") document.documentElement.setAttribute("data-theme", "dark");
+    else document.documentElement.removeAttribute("data-theme");
+    localStorage.setItem("theme", theme);
+    if (allLogs.length) renderCharts();
+}
+
+function toggleTheme() {
+    const current = document.documentElement.getAttribute("data-theme");
+    applyTheme(current === "dark" ? "light" : "dark");
+}
+
+(function(){
+    const saved = localStorage.getItem("theme");
+    if (saved) applyTheme(saved);
+    else if (matchMedia("(prefers-color-scheme: dark)").matches) applyTheme("dark");
+})();
+
+async function boot() {
+
+    await Promise.all([
+        loadLogs(),
+        loadPrinters()
+    ]);
+
+    render();
+
+    setInterval(loadLogs, 15000);
+
+    setInterval(loadPrinters, 60000);
+}
+
+boot();
 
 </script>
 

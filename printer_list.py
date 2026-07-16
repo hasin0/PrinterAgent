@@ -14,10 +14,10 @@ PRINTERS = {
         "ip": "172.16.16.33",
         "location": "E-BLOCK 19C"
     },
-    "QA_QC_PRINTER": {
-        "display_name": "QA/QC PRINTER",
-        "ip": "172.16.16.34",
-        "location": "E-BLOCK 22D"
+    "19D_PRINTER": {
+        "display_name": "ASSET INTEGRITY PRINTER",
+        "ip": "172.16.18.88",
+        "location": "E-BLOCK 19D"
     },
     "SN_REDDY_PRINTER": {
         "display_name": "SN REDDY NEW SHARP PRINTER",
@@ -66,7 +66,14 @@ PRINTERS = {
     },
 
 
-       "ICD_PRINTER": {
+       "FINANCE_PRINTER": {
+        "display_name": "FINANCE PRINTER",
+        "ip": "172.20.229.92",
+        "location": "NEW ADMIN BLOCK FINANCE OFFICE"
+    },
+
+
+      "ICD_PRINTER": {
         "display_name": "ICD PRINTER",
         "ip": "172.16.18.137",
         "location": "E-BLOCK LOCK ICD"

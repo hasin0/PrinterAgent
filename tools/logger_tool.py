@@ -14,7 +14,9 @@ def write_install_log(
     printer_ip,
     location,
     status,
-    details=""
+    details="",
+    ticket_id=None
+
 ):
 
     os.makedirs("logs", exist_ok=True)
@@ -40,7 +42,8 @@ def write_install_log(
                 "printer_ip",
                 "location",
                 "status",
-                "details"
+                "details",
+                "ticket_id"
             ])
 
         writer.writerow([
@@ -52,7 +55,8 @@ def write_install_log(
             printer_ip,
             location,
             status,
-            details
+            details,
+            ticket_id or ""
         ])
 
 
