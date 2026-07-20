@@ -6,9 +6,16 @@ from urllib.parse import urlencode
 import os
 
 from tools.printer_tool import get_all_printers, get_printer
-from tools.logger_tool import write_install_log, read_install_logs
+from tools.logger_tool import (
+    write_install_log,
+    read_install_logs,
+    find_open_ticket
+)
 from tools.sharp_web_register import register_user_on_sharp
-from tools.freshservice_tool import create_freshservice_ticket
+from tools.freshservice_tool import (
+    create_freshservice_ticket,
+    update_ticket_on_retry
+)
 from tools.printer_monitor import get_printer_statuses
 
 app = FastAPI()
@@ -18,14 +25,14 @@ app = FastAPI()
 # CONFIG
 # ================================
 DRIVER_FILE_NAME = "sharp_driver.exe"
-SERVER_BASE_URL = "http://127.0.0.1:8000"
+SERVER_BASE_URL = "http://172.20.228.49:8000"   # <-- your deployed server IP
 INSTALLER_DIR = "generated_installers"
 
 os.makedirs(INSTALLER_DIR, exist_ok=True)
 
 
 # ================================
-# MODEL
+# MODELS
 # ================================
 class RequestModel(BaseModel):
     printer: str
@@ -34,10 +41,21 @@ class RequestModel(BaseModel):
     email: str
 
 
+class RetryModel(BaseModel):
+    printer: str
+    name: str
+    user_number: str
+    email: str
+    ticket_id: int
+
+
 # ================================
 # HELPERS
 # ================================
 def map_status_to_freshservice(log_status):
+    """
+    2 = Open, 3 = Pending, 4 = Resolved
+    """
     if log_status == "REGISTRATION_SUCCESS":
         return 4
     elif log_status == "ALREADY_EXISTS":
@@ -46,14 +64,65 @@ def map_status_to_freshservice(log_status):
         return 2
 
 
+def classify_result(registration_result):
+    text = registration_result.lower()
+
+    if "success" in text:
+        return "REGISTRATION_SUCCESS"
+    elif "already_exists" in text:
+        return "ALREADY_EXISTS"
+    elif "login_failed" in text:
+        return "LOGIN_FAILED"
+    elif "timeout" in text:
+        return "TIMEOUT"
+    elif "failed" in text:
+        return "REGISTRATION_FAILED"
+    else:
+        return "UNKNOWN"
+
+
+def build_description(name, code, email, printer_name, printer_ip,
+                      location, log_status, registration_result):
+    return (
+        "<b>Printer Access Request via PrinterAgent</b><br><br>"
+        f"<b>User:</b> {name}<br>"
+        f"<b>User Code:</b> {code}<br>"
+        f"<b>Email:</b> {email}<br>"
+        f"<b>Printer:</b> {printer_name}<br>"
+        f"<b>Printer IP:</b> {printer_ip}<br>"
+        f"<b>Location:</b> {location}<br>"
+        f"<b>Business Unit:</b> DPRP<br>"
+        f"<b>Unit:</b> Dangote FTZ Ibeju Lekki<br>"
+        f"<b>Ticket Complexity:</b> Low<br>"
+        f"<b>Status:</b> {log_status}<br><br>"
+        f"<b>Details:</b><br>{registration_result}"
+    )
+
+
+def generate_installer_file(printer_ip, printer_name, name, code):
+    safe_code = "".join(c for c in code if c.isalnum())
+    path = os.path.join(INSTALLER_DIR, f"install_printer_{safe_code}.bat")
+    try:
+        script = get_installer_script(printer_ip, printer_name, name, code)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(script)
+        return path
+    except Exception as e:
+        print("Installer file generation failed:", e)
+        return None
+
+
 # ================================
-# PRINTERS
+# GET PRINTERS
 # ================================
 @app.get("/api/printers")
 def api_printers():
     return get_all_printers()
 
 
+# ================================
+# GET PRINTER STATUS (Monitoring)
+# ================================
 @app.get("/api/printer-status")
 def printer_status():
     return get_printer_statuses()
@@ -66,20 +135,14 @@ def printer_status():
 def register(req: RequestModel):
 
     selected_printer = get_printer(req.printer)
-
     if not selected_printer:
-        return {
-            "success": False,
-            "message": "Invalid printer selected."
-        }
+        return {"success": False, "message": "Invalid printer selected."}
 
     printer_ip = selected_printer["ip"]
     printer_name = selected_printer["display_name"]
     printer_location = selected_printer["location"]
 
-    # =============================
     # Sharp Registration
-    # =============================
     try:
         registration_result = register_user_on_sharp(
             printer_ip=printer_ip,
@@ -90,84 +153,60 @@ def register(req: RequestModel):
     except Exception as e:
         registration_result = f"FAILED: {str(e)}"
 
-    text = registration_result.lower()
+    log_status = classify_result(registration_result)
 
-    if "success" in text:
-        log_status = "REGISTRATION_SUCCESS"
-    elif "already_exists" in text:
-        log_status = "ALREADY_EXISTS"
-    elif "login_failed" in text:
-        log_status = "LOGIN_FAILED"
-    elif "timeout" in text:
-        log_status = "TIMEOUT"
-    elif "failed" in text:
-        log_status = "REGISTRATION_FAILED"
-    else:
-        log_status = "UNKNOWN"
-
-    # =============================
-    # Generate installer BAT on disk (only if success)
-    # =============================
+    # Generate installer only on success
     installer_file_path = None
-
     if log_status == "REGISTRATION_SUCCESS":
-        safe_code = "".join(
-            c for c in req.user_number if c.isalnum()
+        installer_file_path = generate_installer_file(
+            printer_ip, printer_name, req.name, req.user_number
         )
-        installer_file_path = os.path.join(
-            INSTALLER_DIR,
-            f"install_printer_{safe_code}.bat"
-        )
-        try:
-            script = get_installer_script(
-                printer_ip,
-                printer_name,
-                req.name,
-                req.user_number
-            )
-            with open(installer_file_path, "w", encoding="utf-8") as f:
-                f.write(script)
-        except Exception as e:
-            print("Installer file generation failed:", e)
-            installer_file_path = None
 
-    # =============================
-    # FreshService Ticket
-    # =============================
     fs_status_code = map_status_to_freshservice(log_status)
 
-    description = (
-        "<b>Printer Access Request via PrinterAgent</b><br><br>"
-        f"<b>User:</b> {req.name}<br>"
-        f"<b>User Code:</b> {req.user_number}<br>"
-        f"<b>Email:</b> {req.email}<br>"
-        f"<b>Printer:</b> {printer_name}<br>"
-        f"<b>Printer IP:</b> {printer_ip}<br>"
-        f"<b>Location:</b> {printer_location}<br>"
-        f"<b>Business Unit:</b> DPRP<br>"
-        f"<b>Unit:</b> Dangote FTZ Ibeju Lekki<br>"
-        f"<b>Ticket Complexity:</b> Low<br>"
-        f"<b>Status:</b> {log_status}<br><br>"
-        f"<b>Details:</b><br>{registration_result}"
+    description = build_description(
+        req.name, req.user_number, req.email,
+        printer_name, printer_ip, printer_location,
+        log_status, registration_result
     )
 
-    ticket_response = create_freshservice_ticket(
-        subject=f"Printer Access Request — {printer_name}",
-        description=description,
-        requester_email=req.email,
-        status_code=fs_status_code,
-        printer_name=printer_name,
-        printer_ip=printer_ip,
-        location=printer_location,
+    # ---- Duplicate ticket prevention ----
+    existing_ticket_id = find_open_ticket(
         user_code=req.user_number,
-        installer_path=installer_file_path
+        printer_name=printer_name
     )
 
-    ticket_id = ticket_response.get("ticket_id")
+    if existing_ticket_id:
+        ticket_id = existing_ticket_id
+        resolved = (log_status == "REGISTRATION_SUCCESS")
+        try:
+            update_ticket_on_retry(
+                ticket_id=ticket_id,
+                result_text=registration_result,
+                resolved=resolved
+            )
+            print(f"Reused existing ticket {ticket_id} (no duplicate created)")
+        except Exception as e:
+            print("Ticket update failed:", e)
+    else:
+        try:
+            ticket_response = create_freshservice_ticket(
+                subject=f"Printer Access Request — {printer_name}",
+                description=description,
+                requester_email=req.email,
+                status_code=fs_status_code,
+                printer_name=printer_name,
+                printer_ip=printer_ip,
+                location=printer_location,
+                user_code=req.user_number,
+                installer_path=installer_file_path
+            )
+            ticket_id = ticket_response.get("ticket_id")
+        except Exception as e:
+            print("Ticket creation failed:", e)
+            ticket_id = None
 
-    # =============================
     # Logging
-    # =============================
     try:
         write_install_log(
             name=req.name,
@@ -183,9 +222,7 @@ def register(req: RequestModel):
     except Exception as e:
         print("Log Error:", e)
 
-    # =============================
     # Installer download URL
-    # =============================
     query_params = urlencode({
         "ip": printer_ip,
         "name": printer_name,
@@ -193,16 +230,94 @@ def register(req: RequestModel):
         "code": req.user_number
     })
 
-    if log_status == "REGISTRATION_SUCCESS":
-        download_url = "/api/installer?" + query_params
-    else:
-        download_url = None
+    download_url = (
+        "/api/installer?" + query_params
+        if log_status == "REGISTRATION_SUCCESS"
+        else None
+    )
 
     return {
         "success": True,
         "message": registration_result,
         "status": log_status,
         "ticket_id": ticket_id,
+        "download": download_url
+    }
+
+
+# ================================
+# RETRY API (reuses existing ticket)
+# ================================
+@app.post("/api/retry")
+def retry(req: RetryModel):
+
+    selected_printer = get_printer(req.printer)
+    if not selected_printer:
+        return {"success": False, "message": "Invalid printer selected."}
+
+    printer_ip = selected_printer["ip"]
+    printer_name = selected_printer["display_name"]
+    printer_location = selected_printer["location"]
+
+    try:
+        registration_result = register_user_on_sharp(
+            printer_ip=printer_ip,
+            user_name=req.name,
+            user_number=req.user_number,
+            email=req.email
+        )
+    except Exception as e:
+        registration_result = f"FAILED: {str(e)}"
+
+    log_status = classify_result(registration_result)
+    success = (log_status == "REGISTRATION_SUCCESS")
+
+    # Generate installer if success
+    if success:
+        generate_installer_file(
+            printer_ip, printer_name, req.name, req.user_number
+        )
+
+    # Update the SAME ticket (no new ticket)
+    try:
+        update_ticket_on_retry(
+            ticket_id=req.ticket_id,
+            result_text=registration_result,
+            resolved=success
+        )
+    except Exception as e:
+        print("Retry ticket update failed:", e)
+
+    # Logging
+    try:
+        write_install_log(
+            name=req.name,
+            code=req.user_number,
+            email=req.email,
+            printer_name=printer_name,
+            printer_ip=printer_ip,
+            location=printer_location,
+            status=log_status,
+            details=registration_result,
+            ticket_id=req.ticket_id
+        )
+    except Exception as e:
+        print("Log Error:", e)
+
+    query_params = urlencode({
+        "ip": printer_ip,
+        "name": printer_name,
+        "user": req.name,
+        "code": req.user_number
+    })
+
+    download_url = "/api/installer?" + query_params if success else None
+
+    return {
+        "success": True,
+        "status": log_status,
+        "ticket_id": req.ticket_id,
+        "message": registration_result,
         "download": download_url
     }
 
@@ -255,7 +370,7 @@ def dashboard():
 
 
 # ================================
-# INSTALLER SCRIPT GENERATOR
+# INSTALLER SCRIPT GENERATOR (Python-based)
 # ================================
 def get_installer_script(ip, name, user, code):
 
@@ -271,6 +386,7 @@ def get_installer_script(ip, name, user, code):
     lines.append("echo ============================================")
     lines.append("echo.")
 
+    # DRIVER CHECK
     lines.append("echo Checking if Sharp driver is already installed...")
     lines.append(
         "powershell -Command \"$d = (Get-PrinterDriver | "
@@ -286,6 +402,7 @@ def get_installer_script(ip, name, user, code):
     lines.append("    goto ADD_PRINTER")
     lines.append(")")
 
+    # DRIVER DOWNLOAD
     lines.append("echo Driver not found - downloading...")
     lines.append(
         f"powershell -Command \"Invoke-WebRequest -Uri '{SERVER_BASE_URL}/drivers/{DRIVER_FILE_NAME}' "
@@ -300,6 +417,7 @@ def get_installer_script(ip, name, user, code):
     lines.append("start /wait \"\" \"%TEMP%\\sharp_driver.exe\" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART")
     lines.append("")
 
+    # ADD PRINTER
     lines.append(":ADD_PRINTER")
     lines.append("echo.")
     lines.append("echo Configuring printer...")
@@ -333,6 +451,7 @@ def get_installer_script(ip, name, user, code):
     )
     lines.append("echo Default printer set")
 
+    # CONFIGURE PREFERENCES (Python)
     lines.append("echo.")
     lines.append("echo Configuring printer preferences...")
 
@@ -366,6 +485,7 @@ def get_installer_script(ip, name, user, code):
     lines.append("    goto DONE")
     lines.append(")")
 
+    # MANUAL FALLBACK
     lines.append(":MANUAL")
     lines.append("echo.")
     lines.append("echo ============================================")
@@ -376,6 +496,7 @@ def get_installer_script(ip, name, user, code):
     lines.append("pause")
     lines.append(f"rundll32 printui.dll,PrintUIEntry /e /n \"{name}\"")
 
+    # DONE
     lines.append(":DONE")
     lines.append("echo.")
     lines.append("echo ============================================")

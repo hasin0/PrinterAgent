@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
@@ -81,7 +82,7 @@ body {
 .brand strong { font-size:14px; }
 .brand span { font-size:12px; color:var(--sub); display:block; }
 
-.topbar-actions { display:flex; align-items:center; gap:12px; }
+.topbar-actions { display:flex; gap:12px; align-items:center; }
 
 .topbar-actions a {
     font-size:13px;
@@ -104,7 +105,6 @@ body {
 }
 .icon-btn:hover { transform: translateY(-1px); }
 
-
 /* ================================
    LAYOUT
    ================================ */
@@ -120,7 +120,6 @@ body {
     .cols-2 { grid-template-columns: 1fr; }
 }
 
-
 /* ================================
    KPI CARDS
    ================================ */
@@ -133,34 +132,16 @@ body {
     position: relative;
     transition: background 0.4s ease;
 }
-
 .kpi .label {
-    font-size:12px;
-    color: var(--sub);
-    text-transform:uppercase;
-    letter-spacing:0.6px;
-    font-weight:700;
+    font-size:12px; color: var(--sub);
+    text-transform:uppercase; letter-spacing:0.6px; font-weight:700;
 }
-
-.kpi .value {
-    font-size: 26px;
-    font-weight:800;
-    margin-top:4px;
-}
-
-.kpi .sub {
-    font-size:12px;
-    color: var(--sub);
-    margin-top:6px;
-}
-
+.kpi .value { font-size: 26px; font-weight:800; margin-top:4px; }
+.kpi .sub { font-size:12px; color: var(--sub); margin-top:6px; }
 .kpi .icon {
-    position:absolute;
-    top:18px; right:18px;
-    width:34px; height:34px;
-    border-radius:10px;
-    display:flex; align-items:center; justify-content:center;
-    font-size:15px;
+    position:absolute; top:18px; right:18px;
+    width:34px; height:34px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center; font-size:15px;
 }
 
 .b1 { background: rgba(0,103,184,.12); color: var(--brand); }
@@ -169,7 +150,6 @@ body {
 .b4 { background: rgba(128,0,255,.12); color: var(--purple); }
 .b5 { background: rgba(255,193,7,.15); color: #b26a00; }
 .b6 { background: rgba(0,150,136,.12); color: #009688; }
-
 
 /* ================================
    PANELS
@@ -182,20 +162,28 @@ body {
     box-shadow: var(--shadow);
     transition: background 0.4s ease;
 }
-
 .panel h3 {
-    font-size:14px;
-    font-weight:700;
-    margin-bottom:12px;
+    font-size:14px; font-weight:700; margin-bottom:12px;
     display:flex; justify-content:space-between; align-items:center;
 }
+.panel h3 span { font-size:11px; color: var(--sub); font-weight:500; }
 
-.panel h3 span {
-    font-size:11px;
-    color: var(--sub);
-    font-weight:500;
+/* ================================
+   FEED
+   ================================ */
+.feed-item {
+    display:flex; gap:10px; padding:8px 0;
+    border-bottom:1px solid var(--border); font-size:13px;
 }
-
+.feed-item:last-child { border-bottom:none; }
+.feed-item .avatar {
+    width:30px; height:30px; border-radius:50%;
+    background: linear-gradient(135deg,#ffcc29,#ff9500);
+    color:white; display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700;
+}
+.feed-item .body { flex:1; }
+.feed-item .time { font-size:11px; color:var(--sub); }
 
 /* ================================
    TABLE
@@ -204,23 +192,14 @@ body {
 
 .table-tools input,
 .table-tools select {
-    padding:8px 12px;
-    border-radius:8px;
-    border:1px solid var(--border);
-    background: var(--panel);
-    color: var(--text);
-    font-size:13px;
+    padding:8px 12px; border-radius:8px; border:1px solid var(--border);
+    background: var(--panel); color: var(--text); font-size:13px;
 }
 
 .table-tools button {
-    padding:8px 12px;
-    border-radius:8px;
-    border:1px solid var(--border);
-    background: var(--panel);
-    color: var(--text);
-    cursor:pointer;
-    font-weight:600;
-    font-size:12px;
+    padding:8px 12px; border-radius:8px; border:1px solid var(--border);
+    background: var(--panel); color: var(--text);
+    cursor:pointer; font-weight:600; font-size:12px;
 }
 
 .table-wrap { overflow:auto; border-radius:10px; }
@@ -228,61 +207,68 @@ table { width:100%; border-collapse:collapse; font-size:12.5px; }
 th, td { padding:10px; text-align:left; border-bottom:1px solid var(--border); }
 th {
     background: var(--border);
-    text-transform:uppercase;
-    font-size:11px;
-    letter-spacing:.5px;
-    cursor:pointer;
+    text-transform:uppercase; font-size:11px; letter-spacing:.5px; cursor:pointer;
 }
 tr:hover { background: rgba(0,103,184,.04); }
-
 
 /* ================================
    BADGES
    ================================ */
 .badge {
-    display:inline-block;
-    padding:3px 9px;
-    border-radius:999px;
-    font-size:11px;
-    color:white;
-    font-weight:600;
+    display:inline-block; padding:3px 9px; border-radius:999px;
+    font-size:11px; color:white; font-weight:600;
 }
 .b-success  { background: var(--success); }
 .b-warning  { background: var(--warning); }
 .b-error    { background: var(--error); }
 .b-unknown  { background: #64748b; }
 
+/* ================================
+   RETRY BUTTON
+   ================================ */
+.retry-btn {
+    padding: 5px 12px;
+    border: none;
+    border-radius: 8px;
+    background: var(--brand);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.retry-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+
+.retry-all-btn {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 8px;
+    background: var(--warning);
+    color: white;
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+}
+.retry-all-btn:hover { opacity: 0.9; }
 
 /* ================================
    PAGINATION
    ================================ */
 .pager {
-    display:flex;
-    justify-content:space-between;
-    margin-top:10px;
-    font-size:12px;
-    color:var(--sub);
-    align-items:center;
+    display:flex; justify-content:space-between;
+    margin-top:10px; font-size:12px; color:var(--sub); align-items:center;
 }
 .pager button {
-    padding:6px 10px;
-    border-radius:8px;
-    border:1px solid var(--border);
-    cursor:pointer;
-    background: var(--panel);
-    color: var(--text);
+    padding:6px 10px; border-radius:8px; border:1px solid var(--border);
+    cursor:pointer; background: var(--panel); color: var(--text);
 }
-
 
 /* ================================
    HEALTH
    ================================ */
 .health {
-    display:flex;
-    justify-content:space-between;
-    padding:8px 0;
-    border-bottom:1px solid var(--border);
-    font-size:13px;
+    display:flex; justify-content:space-between;
+    padding:8px 0; border-bottom:1px solid var(--border); font-size:13px;
 }
 .health:last-child { border:none; }
 .dot-ok  { color: var(--success); }
@@ -290,44 +276,13 @@ tr:hover { background: rgba(0,103,184,.04); }
 .dot-err { color: var(--error); }
 
 .quick a {
-    display:block;
-    padding:10px;
-    background: var(--border);
-    border-radius:10px;
-    font-size:12.5px;
-    font-weight:600;
-    color: var(--brand);
-    margin-bottom:8px;
-    text-decoration:none;
+    display:block; padding:10px; background: var(--border);
+    border-radius:10px; font-size:12.5px; font-weight:600;
+    color: var(--brand); margin-bottom:8px; text-decoration:none;
 }
-
-
-/* ================================
-   FEED
-   ================================ */
-.feed-item {
-    display:flex;
-    gap:10px;
-    padding:8px 0;
-    border-bottom:1px solid var(--border);
-    font-size:13px;
-}
-.feed-item:last-child { border-bottom:none; }
-
-.feed-item .avatar {
-    width:30px; height:30px;
-    border-radius:50%;
-    background: linear-gradient(135deg,#ffcc29,#ff9500);
-    color:white;
-    display:flex; align-items:center; justify-content:center;
-    font-size:12px; font-weight:700;
-}
-.feed-item .body { flex:1; }
-.feed-item .time { font-size:11px; color:var(--sub); }
 </style>
 </head>
 <body>
-
 
 <!-- ================================ TOPBAR ================================ -->
 <div class="topbar">
@@ -346,29 +301,21 @@ tr:hover { background: rgba(0,103,184,.04); }
     </div>
 </div>
 
-
 <div class="wrap">
-
 
 <!-- ================================ KPI ================================ -->
 <div class="grid cols-4">
     <div class="kpi"><div class="icon b1">📥</div><div class="label">Total Requests</div><div class="value" id="k_total">0</div><div class="sub">All time</div></div>
     <div class="kpi"><div class="icon b2">✅</div><div class="label">Successful</div><div class="value" id="k_success">0</div><div class="sub" id="k_success_rate">0%</div></div>
     <div class="kpi"><div class="icon b3">❌</div><div class="label">Failed</div><div class="value" id="k_failed">0</div><div class="sub">Includes timeouts</div></div>
-    <div class="kpi"><div class="icon b4">🖨</div><div class="label">Active Printers</div><div class="value" id="k_printers">0</div><div class="sub">From inventory</div></div>
-    <div class="kpi"><div class="icon b5">⏱</div><div class="label">Avg Registration Time</div><div class="value" id="k_avg">--</div><div class="sub">Rolling</div></div>
-<div class="kpi">
-    <div class="icon b6">🟢</div>
-    <div class="label">Online Printers</div>
-    <div class="value" id="k_online">0</div>
-    <div class="sub">Estimate</div>
+    <div class="kpi"><div class="icon b4">🖨</div><div class="label">Total Printers</div><div class="value" id="k_printers">0</div><div class="sub">From inventory</div></div>
+    <div class="kpi"><div class="icon b6">🟢</div><div class="label">Online Printers</div><div class="value" id="k_online">0</div><div class="sub">Live monitoring</div></div>
+    <div class="kpi"><div class="icon b3">🔴</div><div class="label">Offline Printers</div><div class="value" id="k_offline">0</div><div class="sub">Requires attention</div></div>
 </div>
-`</div>
-
 
 <!-- ================================ CHARTS ================================ -->
 <div class="grid cols-3">
-    <div class="panel"><h3>Requests Per Day <span>Last 14 days</span></h3><canvas id="chartRequests" height="140"></canvas></div>
+    <div class="panel"><h3>Requests Per Day <span>Recent</span></h3><canvas id="chartRequests" height="140"></canvas></div>
     <div class="panel"><h3>Success vs Failure <span>Rate</span></h3><canvas id="chartSuccess" height="140"></canvas></div>
     <div class="panel"><h3>Failure Reasons <span>Top errors</span></h3><canvas id="chartFailures" height="140"></canvas></div>
 </div>
@@ -377,7 +324,6 @@ tr:hover { background: rgba(0,103,184,.04); }
     <div class="panel"><h3>Most Used Printers</h3><canvas id="chartPrinters" height="120"></canvas></div>
     <div class="panel"><h3>Most Active Departments</h3><canvas id="chartDepts" height="120"></canvas></div>
 </div>
-
 
 <!-- ================================ TABLE + FEED ================================ -->
 <div class="grid cols-3">
@@ -399,6 +345,7 @@ tr:hover { background: rgba(0,103,184,.04); }
             <button onclick="exportCSV()">⬇ CSV</button>
             <button onclick="exportExcel()">⬇ Excel</button>
             <button onclick="loadLogs()">🔄 Refresh</button>
+            <button class="retry-all-btn" onclick="retryAllFailed()">↻ Retry All Failed</button>
         </div>
 
         <div class="table-wrap">
@@ -412,6 +359,7 @@ tr:hover { background: rgba(0,103,184,.04); }
                         <th onclick="sortBy('status')">Status</th>
                         <th>Details</th>
                         <th>Ticket</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody id="tbody"></tbody>
@@ -427,7 +375,6 @@ tr:hover { background: rgba(0,103,184,.04); }
         </div>
     </div>
 
-
     <div class="panel">
         <h3>Live Activity Feed</h3>
         <div id="feed"></div>
@@ -435,67 +382,39 @@ tr:hover { background: rgba(0,103,184,.04); }
 
 </div>
 
-
 <!-- ================================ INSIGHT PANELS ================================ -->
 <div class="grid cols-3">
-
     <div class="panel">
         <h3>System Health</h3>
         <div class="health"><span>FastAPI Backend</span><span class="dot-ok">● Operational</span></div>
         <div class="health"><span>Playwright Agent</span><span class="dot-ok">● Running</span></div>
         <div class="health"><span>Logger</span><span class="dot-ok">● Writing</span></div>
-        <div class="health"><span>Printer Reachability</span><span class="dot-warn">● Partial</span></div>
         <div class="health"><span>FreshService API</span><span class="dot-ok">● Connected</span></div>
     </div>
 
     <div class="panel">
-        <h3>Queue Status</h3>
-        <div class="health"><span>Pending Requests</span><span>0</span></div>
-        <div class="health"><span>Active Automation</span><span>1</span></div>
-        <div class="health"><span>Retries</span><span>0</span></div>
-        <div class="health"><span>Longest Wait</span><span>4s</span></div>
-    </div>
-
-    <div class="panel">
-        <h3>AI Recommendations</h3>
-        <p style="font-size:12.5px; color:var(--sub);">Hermes recommends preloading Sharp drivers via Intune to reduce failures.</p>
-        <p style="font-size:12.5px; color:var(--sub); margin-top:6px;">Suggested action: Verify DPRP IT Support group in FreshService weekly.</p>
-    </div>
-
-</div>
-
-
-<div class="grid cols-3">
-    <div class="panel">
         <h3>Printer Status</h3>
         <div id="printerStatus"></div>
-    </div>
-
-    <div class="panel">
-        <h3>Recent Failures</h3>
-        <div id="recentFailures"></div>
     </div>
 
     <div class="panel quick">
         <h3>Quick Actions</h3>
         <a href="/portal">🖨 Request Printer</a>
         <a href="/">🏠 Home Portal</a>
-        <a href="/api/logs">📊 Raw Logs API</a>
-        <a href="/api/printers">🧾 Printer Inventory API</a>
-        <a href="https://dangote.freshservice.com/">🎫 Open FreshService</a>
+        <a href="/api/logs" target="_blank">📊 Raw Logs API</a>
+        <a href="https://dangote.freshservice.com/" target="_blank">🎫 Open FreshService</a>
     </div>
 </div>
 
 </div>
-
 
 <script>
 
 const FS_DOMAIN = "dangote.freshservice.com";
 
 let allLogs = [];
-let allPrinters = [];
 let printerStatuses = [];
+let printerNameToId = {};
 let page = 1;
 let pageSize = 8;
 let sortKey = "timestamp";
@@ -503,27 +422,30 @@ let sortDir = -1;
 let charts = {};
 
 
+/* ================================
+   DATA LOADERS
+   ================================ */
 async function loadLogs() {
     const res = await fetch("/api/logs");
     allLogs = await res.json();
-
-    if(printerStatuses.length > 0){
-        render();
-    }
+    render();
+    document.getElementById("lastUpdate").innerText = new Date().toLocaleTimeString();
 }
 
-
 async function loadPrinters() {
-
-    const res =
-        await fetch("/api/printer-status");
-
-    printerStatuses =
-        await res.json();
-
+    const res = await fetch("/api/printer-status");
+    printerStatuses = await res.json();
     renderPrinterStatus();
-
     updateKPIs();
+}
+
+async function loadPrinterMap() {
+    const res = await fetch("/api/printers");
+    const printers = await res.json();
+    printerNameToId = {};
+    printers.forEach(p => {
+        printerNameToId[p.name] = p.id;
+    });
 }
 
 function render() {
@@ -531,81 +453,38 @@ function render() {
     renderTable();
     renderCharts();
     renderFeed();
-    renderRecentFailures();
 }
+
+
+/* ================================
+   KPIs
+   ================================ */
 function updateKPIs() {
-
     const total = allLogs.length;
-
-    const success = allLogs.filter(
-        l => l.status === "REGISTRATION_SUCCESS"
+    const success = allLogs.filter(l => l.status === "REGISTRATION_SUCCESS").length;
+    const failed = allLogs.filter(l =>
+        ["REGISTRATION_FAILED","LOGIN_FAILED","TIMEOUT","UNKNOWN"].includes(l.status)
     ).length;
 
-    const failed = allLogs.filter(
-        l => [
-            "REGISTRATION_FAILED",
-            "LOGIN_FAILED",
-            "TIMEOUT",
-            "UNKNOWN"
-        ].includes(l.status)
-    ).length;
-
-    // Printer Monitoring Metrics
     const totalPrinters = printerStatuses.length;
+    const online = printerStatuses.filter(p => p.status === "reachable").length;
+    const offline = printerStatuses.filter(p => p.status === "offline").length;
 
-    const onlinePrinters = printerStatuses.filter(
-        p => p.status === "reachable"
-    ).length;
+    document.getElementById("k_total").innerText = total;
+    document.getElementById("k_success").innerText = success;
+    document.getElementById("k_failed").innerText = failed;
+    document.getElementById("k_printers").innerText = totalPrinters;
+    document.getElementById("k_online").innerText = online;
+    document.getElementById("k_offline").innerText = offline;
 
-    const offlinePrinters = printerStatuses.filter(
-        p => p.status === "offline"
-    ).length;
-
-    const slowPrinters = printerStatuses.filter(
-        p => p.status === "timeout"
-    ).length;
-
-    // Update KPI Cards
-    document.getElementById("k_total").innerText =
-        total;
-
-    document.getElementById("k_success").innerText =
-        success;
-
-    document.getElementById("k_failed").innerText =
-        failed;
-
-  document.getElementById("k_printers").innerText =
-    printerStatuses.length;
-
-document.getElementById("k_online").innerText =
-    printerStatuses.filter(
-        p => p.status === "reachable"
-    ).length;
-
-    document.getElementById("k_avg").innerText =
-        "12s";
-
-    const rate =
-        total > 0
-            ? Math.round((success / total) * 100)
-            : 0;
-
-    document.getElementById("k_success_rate").innerText =
-        rate + "% success rate";
-
-    // Optional console values for troubleshooting
-    console.log({
-        totalPrinters,
-        onlinePrinters,
-        offlinePrinters,
-        slowPrinters
-    });
+    const rate = total ? Math.round(100*success/total) : 0;
+    document.getElementById("k_success_rate").innerText = rate + "% success rate";
 }
 
 
-
-/* ==== TABLE ==== */
+/* ================================
+   TABLE
+   ================================ */
 function renderTable() {
     const search = document.getElementById("search").value.toLowerCase();
     const filter = document.getElementById("filter").value;
@@ -625,29 +504,44 @@ function renderTable() {
     const start = (page-1)*pageSize;
     const paged = rows.slice(start, start+pageSize);
 
-    tbody.innerHTML = paged.map(r => `
-        <tr>
-            <td>${new Date(r.timestamp).toLocaleString()}</td>
-            <td>${r.name || ""}</td>
-            <td>${r.printer_name || ""}</td>
-            <td>${r.location || ""}</td>
-            <td><span class="badge ${badge(r.status)}">${r.status || ""}</span></td>
-            <td>${(r.details||"").slice(0,90)}</td>
-                <td>
-        ${r.ticket_id
-        ? `https://dangote.freshservice.com/a/tickets/${r.ticket_id}
-            SR-${r.ticket_id}
-        </a>`
-        : "-"
-        }
-        </td>
-        </tr>
-    `).join("") ||
-    `<tr><td colspan=7 style="padding:20px;text-align:center;color:var(--sub);">No records</td></tr>`;
+    tbody.innerHTML = paged.map(r => {
+
+        const canRetry =
+            ["TIMEOUT","LOGIN_FAILED","REGISTRATION_FAILED","UNKNOWN"].includes(r.status)
+            && r.ticket_id;
+
+        const retryBtn = canRetry
+            ? `<button class="retry-btn"
+                  onclick="retryRequest(
+                    '${(r.printer_name||'').replace(/'/g,"\\'")}',
+                    '${(r.name||'').replace(/'/g,"\\'")}',
+                    '${r.code||''}',
+                    '${r.email||''}',
+                    ${r.ticket_id}
+                  )">Retry</button>`
+            : "—";
+
+        const ticketCell = r.ticket_id
+            ? `<a href="https://${FS_DOMAIN}/a/tickets/${r.ticket_id}" target="_blank">SR-${r.ticket_id}</a>`
+            : "-";
+
+        return `
+            <tr>
+                <td>${new Date(r.timestamp).toLocaleString()}</td>
+                <td>${r.name || ""}</td>
+                <td>${r.printer_name || ""}</td>
+                <td>${r.location || ""}</td>
+                <td><span class="badge ${badge(r.status)}">${r.status || ""}</span></td>
+                <td>${(r.details||"").slice(0,90)}</td>
+                <td>${ticketCell}</td>
+                <td>${retryBtn}</td>
+            </tr>
+        `;
+    }).join("") ||
+    `<tr><td colspan=8 style="padding:20px;text-align:center;color:var(--sub);">No records</td></tr>`;
 
     document.getElementById("pageN").innerText = page;
 }
-
 
 function badge(s) {
     if (s === "REGISTRATION_SUCCESS") return "b-success";
@@ -666,7 +560,88 @@ function prevPage() { if (page>1) { page--; renderTable(); }}
 function nextPage() { page++; renderTable(); }
 
 
-/* ==== EXPORT ==== */
+/* ================================
+   RETRY
+   ================================ */
+async function retryRequest(printerName, name, code, email, ticketId) {
+
+    const printerId = printerNameToId[printerName];
+
+    if (!printerId) {
+        alert("Could not resolve printer ID for: " + printerName +
+              "\nMake sure the printer still exists in the inventory.");
+        return;
+    }
+
+    if (!confirm(`Retry registration for ${name} on ${printerName}?`)) return;
+
+    try {
+        const res = await fetch("/api/retry", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                printer: printerId,
+                name: name,
+                user_number: code,
+                email: email,
+                ticket_id: ticketId
+            })
+        });
+
+        const data = await res.json();
+
+        alert("Retry result: " + data.status + "\nTicket: SR-" + data.ticket_id);
+        loadLogs();
+
+    } catch (e) {
+        console.error(e);
+        alert("Retry failed. Check server connection.");
+    }
+}
+
+async function retryAllFailed() {
+
+    const failed = allLogs.filter(r =>
+        ["TIMEOUT","LOGIN_FAILED","REGISTRATION_FAILED","UNKNOWN"].includes(r.status)
+        && r.ticket_id
+    );
+
+    if (failed.length === 0) {
+        alert("No failed requests to retry.");
+        return;
+    }
+
+    if (!confirm(`Retry ${failed.length} failed request(s)?`)) return;
+
+    for (const r of failed) {
+        const printerId = printerNameToId[r.printer_name];
+        if (!printerId) continue;
+
+        try {
+            await fetch("/api/retry", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    printer: printerId,
+                    name: r.name,
+                    user_number: r.code,
+                    email: r.email,
+                    ticket_id: r.ticket_id
+                })
+            });
+        } catch (e) {
+            console.error("Retry failed for", r.name, e);
+        }
+    }
+
+    alert("Retry All completed.");
+    loadLogs();
+}
+
+
+/* ================================
+   EXPORT
+   ================================ */
 function exportCSV() {
     const headers = ["timestamp","name","code","printer_name","location","status","details","ticket_id"];
     const rows = allLogs.map(l => headers.map(h => `"${(l[h]||"").toString().replace(/"/g,'""')}"`).join(","));
@@ -689,7 +664,9 @@ function download(filename, content, type) {
 }
 
 
-/* ==== CHARTS ==== */
+/* ================================
+   CHARTS
+   ================================ */
 function themeAwareColors() {
     const dark = document.documentElement.getAttribute("data-theme") === "dark";
     return {
@@ -711,8 +688,7 @@ function renderCharts() {
             data: Object.values(days),
             borderColor: "#0067b8",
             backgroundColor: "rgba(0,103,184,0.15)",
-            fill: true,
-            tension: 0.4
+            fill: true, tension: 0.4
         }]
     });
 
@@ -721,10 +697,7 @@ function renderCharts() {
 
     makeChart("chartSuccess", "doughnut", {
         labels: ["Success","Failed"],
-        datasets: [{
-            data: [success, failed],
-            backgroundColor: ["#2e7d32","#c62828"]
-        }]
+        datasets: [{ data: [success, failed], backgroundColor: ["#2e7d32","#c62828"] }]
     });
 
     const fmap = {};
@@ -754,15 +727,11 @@ function renderCharts() {
 function makeChart(id, type, data) {
     if (charts[id]) charts[id].destroy();
     const colors = themeAwareColors();
-
     charts[id] = new Chart(document.getElementById(id), {
         type, data,
         options: {
             plugins: {
-                legend: {
-                    display: type === "doughnut",
-                    labels: { color: colors.text }
-                }
+                legend: { display: type === "doughnut", labels: { color: colors.text } }
             },
             scales: (type==="line"||type==="bar") ? {
                 y: { beginAtZero:true, grid:{color:colors.grid}, ticks:{color:colors.text} },
@@ -773,7 +742,9 @@ function makeChart(id, type, data) {
 }
 
 
-/* ==== FEED / FAILURES / PRINTERS ==== */
+/* ================================
+   FEED + PRINTER STATUS
+   ================================ */
 function renderFeed() {
     const feed = document.getElementById("feed");
     const recent = allLogs.slice(-8).reverse();
@@ -791,59 +762,31 @@ function renderFeed() {
     `).join("") || `<div style="font-size:12px;color:var(--sub);">No activity yet</div>`;
 }
 
-function renderRecentFailures() {
-    const target = document.getElementById("recentFailures");
-    const fails = allLogs.filter(l =>
-        ["REGISTRATION_FAILED","LOGIN_FAILED","TIMEOUT","UNKNOWN"].includes(l.status)
-    ).slice(-4).reverse();
-
-    target.innerHTML = fails.map(l => `
-        <div class="feed-item">
-            <div class="avatar" style="background:#c62828;">✖</div>
-            <div class="body">
-                <strong>${l.name}</strong> → ${l.printer_name}<br>
-                <span class="time">${l.status} · ${new Date(l.timestamp).toLocaleString()}</span>
-            </div>
-        </div>
-    `).join("") || `<div style="font-size:12px;color:var(--sub);">No failures 🎉</div>`;
-}
 function renderPrinterStatus() {
+    const target = document.getElementById("printerStatus");
+    target.innerHTML = printerStatuses.map(p => {
 
-    const target =
-        document.getElementById("printerStatus");
+        let badge = "Offline";
+        let color = "var(--error)";
 
-    target.innerHTML =
-        printerStatuses.map(p => {
+        if (p.status === "reachable") { badge = "Reachable"; color = "var(--success)"; }
+        else if (p.status === "timeout") { badge = "Slow"; color = "var(--warning)"; }
 
-            let badge = "";
-            let color = "";
+        const rt = p.response_time ? ` (${p.response_time}ms)` : "";
 
-           if (p.status === "reachable") {
-    badge = "Reachable";
-    color = "#4ade80";
-}
-else if (p.status === "timeout") {
-    badge = "Slow";
-    color = "#fbbf24";
-}
-else {
-    badge = "Offline";
-    color = "#f87171";
-}return `
-<div class="health">
-    <span>${p.name}</span>
-
-    <span style="color:${color};font-weight:600;">
-        ● ${badge}
-        ${p.response_time ? `(${p.response_time}ms)` : ""}
-    </span>
-</div>
-`;
-        }).join("");
+        return `
+            <div class="health">
+                <span>${p.name}</span>
+                <span style="color:${color};font-weight:600;">● ${badge}${rt}</span>
+            </div>
+        `;
+    }).join("");
 }
 
 
-/* ==== THEME TOGGLE ==== */
+/* ================================
+   THEME
+   ================================ */
 function applyTheme(theme) {
     if (theme === "dark") document.documentElement.setAttribute("data-theme", "dark");
     else document.documentElement.removeAttribute("data-theme");
@@ -862,17 +805,18 @@ function toggleTheme() {
     else if (matchMedia("(prefers-color-scheme: dark)").matches) applyTheme("dark");
 })();
 
-async function boot() {
 
+/* ================================
+   BOOT
+   ================================ */
+async function boot() {
     await Promise.all([
         loadLogs(),
-        loadPrinters()
+        loadPrinters(),
+        loadPrinterMap()
     ]);
-
     render();
-
     setInterval(loadLogs, 15000);
-
     setInterval(loadPrinters, 60000);
 }
 

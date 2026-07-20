@@ -70,3 +70,11 @@ static/drivers/*.exe
 discover/
 
 logs/
+
+venv/
+
+generated_installers/
+logs/
+
+__pycache__/
+*.pyc

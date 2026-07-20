@@ -19,6 +19,9 @@ from config.freshservice import (
 BASE_URL = f"https://{FRESHSERVICE_DOMAIN}/api/v2"
 
 
+# ================================
+# AUTH HEADER
+# ================================
 def _auth_header():
     token = base64.b64encode(
         f"{FRESHSERVICE_API_KEY}:X".encode()
@@ -29,15 +32,18 @@ def _auth_header():
     }
 
 
+# ================================
+# PAYLOAD BUILDER
+# ================================
 def _build_payload(subject, description, requester_email):
     payload = {
         "email": requester_email or DEFAULT_REQUESTER_EMAIL,
         "subject": subject,
         "description": description,
 
-        "status": 2,
+        "status": 2,        # Always create as Open first
         "priority": 1,
-        "source": 2,
+        "source": 2,        # Portal
         "urgency": 1,
         "impact": 1,
 
@@ -62,12 +68,15 @@ def _build_payload(subject, description, requester_email):
     return payload
 
 
+# ================================
+# RESOLVE TICKET
+# ================================
 def resolve_ticket(ticket_id, resolution_note):
     url = f"{BASE_URL}/tickets/{ticket_id}"
     r = requests.put(
         url,
         headers=_auth_header(),
-        json={"status": 4},
+        json={"status": 4},   # Resolved
         timeout=15
     )
 
@@ -77,6 +86,9 @@ def resolve_ticket(ticket_id, resolution_note):
     return r.status_code
 
 
+# ================================
+# ADD NOTE
+# ================================
 def add_note(ticket_id, note, private=True):
     url = f"{BASE_URL}/tickets/{ticket_id}/notes"
     return requests.post(
@@ -87,10 +99,36 @@ def add_note(ticket_id, note, private=True):
     )
 
 
+# ================================
+# UPDATE TICKET ON RETRY
+# ================================
+def update_ticket_on_retry(ticket_id, result_text, resolved):
+    """
+    Add a retry note to an existing ticket.
+    Resolve it if the retry succeeded.
+    """
+    add_note(
+        ticket_id,
+        f"Retry attempt by PrinterAgent.\n\nResult:\n{result_text}",
+        private=True
+    )
+
+    if resolved:
+        resolve_ticket(
+            ticket_id,
+            "PrinterAgent retry succeeded. Ticket auto-resolved."
+        )
+
+    return True
+
+
+# ================================
+# ATTACH FILE (installer BAT)
+# ================================
 def attach_file(ticket_id, file_path):
     """
-    Upload a file (e.g. installer .bat) to an existing FreshService ticket.
-    Note: multipart upload must NOT include Content-Type: application/json.
+    Upload a file to an existing FreshService ticket.
+    Uses multipart PUT (no JSON Content-Type header).
     """
     url = f"{BASE_URL}/tickets/{ticket_id}"
 
@@ -121,8 +159,6 @@ def attach_file(ticket_id, file_path):
             )
 
         print("ATTACHMENT STATUS:", r.status_code)
-        print("ATTACHMENT RESPONSE:", r.text)
-
         return r.status_code
 
     except Exception as e:
@@ -130,6 +166,9 @@ def attach_file(ticket_id, file_path):
         return None
 
 
+# ================================
+# CREATE TICKET
+# ================================
 def create_freshservice_ticket(
     subject,
     description,
@@ -169,7 +208,7 @@ def create_freshservice_ticket(
             or body.get("id")
         )
 
-        # ✅ Attach installer if provided
+        # Attach installer if provided
         if ticket_id and installer_path:
             try:
                 attach_file(ticket_id, installer_path)
@@ -182,7 +221,7 @@ def create_freshservice_ticket(
             except Exception as e:
                 print("Attachment failed:", str(e))
 
-        # ✅ Auto-resolve if successful
+        # Auto-resolve if successful
         if ticket_id and status_code == 4:
             print(f"Auto resolving FreshService ticket {ticket_id}")
             resolution_note = (
