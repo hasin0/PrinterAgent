@@ -63,8 +63,9 @@ jobs:
         run: |
           & "$env:VENV_DIR\Scripts\python.exe" -m py_compile app.py
 
-      - name: Deployment Complete
+      - name: Restart PrinterAgent Service
         shell: powershell
         run: |
+          Write-Host "Restarting PrinterAgent service..."
+          nssm restart PrinterAgent
           Write-Host "PrinterAgent deployment completed successfully."
-          Write-Host "Service restart is currently being handled manually."
