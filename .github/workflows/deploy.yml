@@ -2,69 +2,43 @@ name: Deploy PrinterAgent
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
-
-env:
-  VENV_DIR: C:\Users\Admin\Desktop\PrinterAgent\venv
-  HASH_FILE: C:\Users\Admin\Desktop\PrinterAgent\venv\.requirement.hash
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: self-hosted
 
     steps:
-      - name: Checkout Latest Code
+
+      - name: Checkout latest code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2   # needed to compare with previous commit
 
-      - name: Install Dependencies (only if changed)
-        shell: powershell
+      - name: Check if requirements changed
+        id: reqcheck
+        shell: pwsh
         run: |
-
-          if (-not (Test-Path "requirement.txt")) {
-            Write-Error "requirement.txt not found in repo root."
-            exit 1
-          }
-
-          $currentHash = (Get-FileHash "requirement.txt" -Algorithm SHA256).Hash
-
-          $storedHash = ""
-          if (Test-Path "$env:HASH_FILE") {
-            $storedHash = Get-Content "$env:HASH_FILE" -Raw
-          }
-
-          $storedHash = $storedHash.Trim()
-
-          $venvPython = "$env:VENV_DIR\Scripts\python.exe"
-
-          if ((Test-Path $venvPython) -and ($currentHash -eq $storedHash)) {
-
-            Write-Host "requirements unchanged - skipping install"
-
+          $changed = git diff --name-only HEAD~1 HEAD | Select-String "requirements.txt"
+          if ($changed) {
+              echo "changed=true" >> $env:GITHUB_OUTPUT
+              Write-Host "requirements.txt changed - will install"
           } else {
-
-            Write-Host "requirements changed - installing dependencies"
-
-            if (-not (Test-Path $venvPython)) {
-              python -m venv "$env:VENV_DIR"
-            }
-
-            & $venvPython -m pip install --upgrade pip
-            & $venvPython -m pip install -r requirement.txt
-
-            $currentHash | Out-File `
-              -FilePath "$env:HASH_FILE" `
-              -Encoding ascii `
-              -NoNewline
+              echo "changed=false" >> $env:GITHUB_OUTPUT
+              Write-Host "requirements.txt unchanged - skipping install"
           }
 
-      - name: Verify Syntax
-        shell: powershell
+      - name: Install dependencies (only if changed)
+        if: steps.reqcheck.outputs.changed == 'true'
         run: |
-          & "$env:VENV_DIR\Scripts\python.exe" -m py_compile app.py
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-      - name: Deployment Complete
-        shell: powershell
+      - name: Verify app syntax
         run: |
-          Write-Host "PrinterAgent deployment completed successfully."
-          Write-Host "Service restart is currently being handled manually."
+          python -m py_compile app.py
+
+      - name: Restart PrinterAgent service
+        run: |
+          nssm restart PrinterAgent
