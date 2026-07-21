@@ -19,18 +19,7 @@ jobs:
       - name: Checkout Latest Code
         uses: actions/checkout@v4
 
-      # 2) Stop the service so it releases any file locks on the venv
-      - name: Stop PrinterAgent Service
-        shell: powershell
-        run: |
-          if (Get-Service -Name "PrinterAgent" -ErrorAction SilentlyContinue) {
-            Stop-Service -Name "PrinterAgent" -Force -ErrorAction SilentlyContinue
-            Write-Host "PrinterAgent service stopped."
-          } else {
-            Write-Host "PrinterAgent service not found - skipping stop."
-          }
-
-      # 3) Install deps ONLY if requirement.txt changed (or venv is missing)
+      # 2) Install deps ONLY if requirement.txt changed (or venv is missing)
       - name: Install Dependencies (only if changed)
         shell: powershell
         run: |
@@ -73,21 +62,16 @@ jobs:
             Write-Host "Dependencies installed and hash saved."
           }
 
-      # 4) Make sure the app compiles before we (re)start it
+      # 3) Make sure the app compiles
       - name: Verify Syntax
         shell: powershell
         run: |
           & "$env:VENV_DIR\Scripts\python.exe" -m py_compile app.py
 
-      # 5) Restart the service and verify it came up
-      - name: Restart PrinterAgent Service
-        shell: powershell
-        run: |
-          Start-Service -Name "PrinterAgent"
-          Start-Sleep -Seconds 3
-          $svc = Get-Service -Name "PrinterAgent"
-          Write-Host "PrinterAgent service status: $($svc.Status)"
-          if ($svc.Status -ne "Running") {
-            Write-Error "PrinterAgent failed to start!"
-            exit 1
-          }
+      # NOTE: Service stop/restart is handled MANUALLY on the PrinterAgent PC.
+      # Once the runner account has service-control permission, you can re-add:
+      #   - name: Restart PrinterAgent Service
+      #     shell: powershell
+      #     run: |
+      #       Stop-Service -Name "PrinterAgent" -Force -ErrorAction SilentlyContinue
+      #       Start-Service -Name "PrinterAgent"
