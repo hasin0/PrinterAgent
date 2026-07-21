@@ -14,31 +14,39 @@ jobs:
       - name: Checkout latest code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2   # needed to compare with previous commit
+          fetch-depth: 2
 
-      - name: Check if requirement changed
+      - name: Check if requirements changed
         id: reqcheck
-        shell: pwsh
+        shell: powershell
         run: |
-          $changed = git diff --name-only HEAD~1 HEAD | Select-String "requirement.txt"
+          try {
+              $changed = git diff --name-only HEAD~1 HEAD | Select-String "requirements.txt"
+          } catch {
+              $changed = $true
+          }
+
           if ($changed) {
-              echo "changed=true" >> $env:GITHUB_OUTPUT
-              Write-Host "requirement.txt changed - will install"
+              "changed=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              Write-Host "requirements.txt changed - will install"
           } else {
-              echo "changed=false" >> $env:GITHUB_OUTPUT
-              Write-Host "requirement.txt unchanged - skipping install"
+              "changed=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              Write-Host "requirements.txt unchanged - skipping install"
           }
 
       - name: Install dependencies (only if changed)
         if: steps.reqcheck.outputs.changed == 'true'
+        shell: powershell
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirement.txt
+          pip install -r requirements.txt
 
       - name: Verify app syntax
+        shell: powershell
         run: |
           python -m py_compile app.py
 
       - name: Restart PrinterAgent service
+        shell: powershell
         run: |
           nssm restart PrinterAgent
