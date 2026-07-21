@@ -68,4 +68,10 @@ jobs:
         run: |
           Write-Host "Restarting PrinterAgent service..."
           nssm restart PrinterAgent
-          Write-Host "PrinterAgent deployment completed successfully."
+          try {
+              Restart-Service -Name "PrinterAgent" -Force
+              Write-Host "PrinterAgent restarted successfully."
+          } catch {
+              Write-Host "WARNING: Could not restart service automatically."
+              Write-Host $_.Exception.Message
+          }
