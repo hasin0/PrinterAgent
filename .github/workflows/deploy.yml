@@ -16,35 +16,35 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Check if requirement changed
+      - name: Check if requirements changed
         id: reqcheck
         shell: powershell
         run: |
           try {
-              $changed = git diff --name-only HEAD~1 HEAD | Select-String "requirement.txt"
+              $changed = git diff --name-only HEAD~1 HEAD | Select-String "requirements.txt"
           } catch {
               $changed = $true
           }
 
           if ($changed) {
               "changed=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-              Write-Host "requirement.txt changed - will install"
+              Write-Host "requirements.txt changed - will install"
           } else {
               "changed=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-              Write-Host "requirement.txt unchanged - skipping install"
+              Write-Host "requirements.txt unchanged - skipping install"
           }
 
       - name: Install dependencies (only if changed)
         if: steps.reqcheck.outputs.changed == 'true'
         shell: powershell
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirement.txt
+          .\.venv\Scripts\python.exe -m pip install --upgrade pip
+          .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 
       - name: Verify app syntax
         shell: powershell
         run: |
-          python -m py_compile app.py
+          .\.venv\Scripts\python.exe -m py_compile app.py
 
       - name: Restart PrinterAgent service
         shell: powershell
