@@ -5,6 +5,11 @@ on:
     branches: [ main ]
   workflow_dispatch:   # allows manual trigger from the Actions tab
 
+env:
+  # Persistent venv lives OUTSIDE the checkout so it survives between runs
+  VENV_DIR: C:\PrinterAgent-venv
+  HASH_FILE: C:\PrinterAgent-venv\.requirement.hash
+
 jobs:
   deploy:
     runs-on: self-hosted        # your Windows self-hosted runner
@@ -14,16 +19,7 @@ jobs:
       - name: Checkout Latest Code
         uses: actions/checkout@v4
 
-      # 2) Show what was checked out (helps catch missing/misnamed files)
-      - name: Debug - List files
-        shell: powershell
-        run: |
-          Write-Host "--- Working directory ---"
-          Get-Location
-          Write-Host "--- Looking for requirement files ---"
-          Get-ChildItem -Recurse -Filter "requirement*.txt" | Select-Object FullName
-
-      # 3) Stop the service so it releases any file locks on the venv
+      # 2) Stop the service so it releases any file locks on the venv
       - name: Stop PrinterAgent Service
         shell: powershell
         run: |
@@ -34,21 +30,56 @@ jobs:
             Write-Host "PrinterAgent service not found - skipping stop."
           }
 
-      # 4) Build a fresh venv in the checkout folder and install deps
-      - name: Install Dependencies
+      # 3) Install deps ONLY if requirement.txt changed (or venv is missing)
+      - name: Install Dependencies (only if changed)
         shell: powershell
         run: |
-          python -m venv .venv
-          .\.venv\Scripts\python.exe -m pip install --upgrade pip
-          .\.venv\Scripts\python.exe -m pip install -r requirement.txt
+          # Make sure the requirement file exists
+          if (-not (Test-Path "requirement.txt")) {
+            Write-Error "requirement.txt not found in repo root."
+            exit 1
+          }
 
-      # 5) Make sure the app compiles before we (re)start it
+          # Compute the current hash of requirement.txt
+          $currentHash = (Get-FileHash "requirement.txt" -Algorithm SHA256).Hash
+          Write-Host "Current requirement.txt hash: $currentHash"
+
+          # Read the previously stored hash (if any)
+          $storedHash = ""
+          if (Test-Path "$env:HASH_FILE") {
+            $storedHash = Get-Content "$env:HASH_FILE" -Raw
+          }
+          $storedHash = $storedHash.Trim()
+
+          $venvPython = "$env:VENV_DIR\Scripts\python.exe"
+
+          # Decide whether we need to (re)install
+          if ( (Test-Path $venvPython) -and ($currentHash -eq $storedHash) ) {
+            Write-Host "requirement.txt unchanged and venv exists -> SKIPPING install. "
+          } else {
+            Write-Host "requirement.txt changed OR venv missing -> installing dependencies..."
+
+            # Create the venv if it doesn't exist yet
+            if (-not (Test-Path $venvPython)) {
+              Write-Host "Creating fresh venv at $env:VENV_DIR"
+              python -m venv "$env:VENV_DIR"
+            }
+
+            & $venvPython -m pip install --upgrade pip
+            & $venvPython -m pip install -r requirement.txt
+
+            # Save the new hash so the next run can compare
+            $currentHash | Out-File -FilePath "$env:HASH_FILE" -Encoding ascii -NoNewline
+            Write-Host "Dependencies installed and hash saved."
+          }
+
+      # 4) Make sure the app compiles before we (re)start it
       - name: Verify Syntax
         shell: powershell
         run: |
-          .\.venv\Scripts\python.exe -m py_compile app.py
+          & "$env:VENV_DIR\Scripts\python.exe" -m py_compile app.py
 
-      # 6) Restart the service and verify it came up
+      # 5) Restart the service and verify it came up
       - name: Restart PrinterAgent Service
         shell: powershell
         run: |
