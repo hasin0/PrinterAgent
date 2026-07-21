@@ -2,51 +2,69 @@ name: Deploy PrinterAgent
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  VENV_DIR: C:\Users\Admin\Desktop\PrinterAgent\venv
+  HASH_FILE: C:\Users\Admin\Desktop\PrinterAgent\venv\.requirements.hash
 
 jobs:
   deploy:
     runs-on: self-hosted
 
     steps:
-
-      - name: Checkout latest code
+      - name: Checkout Latest Code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
 
-      - name: Check if requirements changed
-        id: reqcheck
+      - name: Install Dependencies (only if changed)
         shell: powershell
         run: |
-          try {
-              $changed = git diff --name-only HEAD~1 HEAD | Select-String "requirements.txt"
-          } catch {
-              $changed = $true
+
+          if (-not (Test-Path "requirements.txt")) {
+            Write-Error "requirements.txt not found in repo root."
+            exit 1
           }
 
-          if ($changed) {
-              "changed=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-              Write-Host "requirements.txt changed - will install"
+          $currentHash = (Get-FileHash "requirements.txt" -Algorithm SHA256).Hash
+
+          $storedHash = ""
+          if (Test-Path "$env:HASH_FILE") {
+            $storedHash = Get-Content "$env:HASH_FILE" -Raw
+          }
+
+          $storedHash = $storedHash.Trim()
+
+          $venvPython = "$env:VENV_DIR\Scripts\python.exe"
+
+          if ((Test-Path $venvPython) -and ($currentHash -eq $storedHash)) {
+
+            Write-Host "requirements unchanged - skipping install"
+
           } else {
-              "changed=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-              Write-Host "requirements.txt unchanged - skipping install"
+
+            Write-Host "requirements changed - installing dependencies"
+
+            if (-not (Test-Path $venvPython)) {
+              python -m venv "$env:VENV_DIR"
+            }
+
+            & $venvPython -m pip install --upgrade pip
+            & $venvPython -m pip install -r requirements.txt
+
+            $currentHash | Out-File `
+              -FilePath "$env:HASH_FILE" `
+              -Encoding ascii `
+              -NoNewline
           }
 
-      - name: Install dependencies (only if changed)
-        if: steps.reqcheck.outputs.changed == 'true'
+      - name: Verify Syntax
         shell: powershell
         run: |
-          .\.venv\Scripts\python.exe -m pip install --upgrade pip
-          .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+          & "$env:VENV_DIR\Scripts\python.exe" -m py_compile app.py
 
-      - name: Verify app syntax
+      - name: Deployment Complete
         shell: powershell
         run: |
-          .\.venv\Scripts\python.exe -m py_compile app.py
-
-      - name: Restart PrinterAgent service
-        shell: powershell
-        run: |
-          nssm restart PrinterAgent
+          Write-Host "PrinterAgent deployment completed successfully."
+          Write-Host "Service restart is currently being handled manually."
