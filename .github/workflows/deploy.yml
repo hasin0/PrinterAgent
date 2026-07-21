@@ -3,7 +3,7 @@ name: Deploy PrinterAgent
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:   # lets you trigger manually from the Actions tab
+  workflow_dispatch:   # allows manual trigger from the Actions tab
 
 jobs:
   deploy:
@@ -14,14 +14,14 @@ jobs:
       - name: Checkout Latest Code
         uses: actions/checkout@v4
 
-      # 2) Show what was checked out (helps catch missing requirements.txt)
+      # 2) Show what was checked out (helps catch missing/misnamed files)
       - name: Debug - List files
         shell: powershell
         run: |
           Write-Host "--- Working directory ---"
           Get-Location
-          Write-Host "--- Looking for requirements files ---"
-          Get-ChildItem -Recurse -Filter "requirements*.txt" | Select-Object FullName
+          Write-Host "--- Looking for requirement files ---"
+          Get-ChildItem -Recurse -Filter "requirement*.txt" | Select-Object FullName
 
       # 3) Stop the service so it releases any file locks on the venv
       - name: Stop PrinterAgent Service
@@ -40,7 +40,7 @@ jobs:
         run: |
           python -m venv .venv
           .\.venv\Scripts\python.exe -m pip install --upgrade pip
-          .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+          .\.venv\Scripts\python.exe -m pip install -r requirement.txt
 
       # 5) Make sure the app compiles before we (re)start it
       - name: Verify Syntax
@@ -48,7 +48,7 @@ jobs:
         run: |
           .\.venv\Scripts\python.exe -m py_compile app.py
 
-      # 6) Restart the service
+      # 6) Restart the service and verify it came up
       - name: Restart PrinterAgent Service
         shell: powershell
         run: |
