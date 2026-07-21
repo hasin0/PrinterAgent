@@ -2,28 +2,61 @@ name: Deploy PrinterAgent
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  workflow_dispatch:   # lets you trigger manually from the Actions tab
 
 jobs:
   deploy:
-
-    runs-on: self-hosted
+    runs-on: self-hosted        # your Windows self-hosted runner
 
     steps:
-
+      # 1) Get the latest code
       - name: Checkout Latest Code
         uses: actions/checkout@v4
 
-      - name: Install Dependencies
+      # 2) Show what was checked out (helps catch missing requirements.txt)
+      - name: Debug - List files
+        shell: powershell
         run: |
-         python -m venv .venv
+          Write-Host "--- Working directory ---"
+          Get-Location
+          Write-Host "--- Looking for requirements files ---"
+          Get-ChildItem -Recurse -Filter "requirements*.txt" | Select-Object FullName
+
+      # 3) Stop the service so it releases any file locks on the venv
+      - name: Stop PrinterAgent Service
+        shell: powershell
+        run: |
+          if (Get-Service -Name "PrinterAgent" -ErrorAction SilentlyContinue) {
+            Stop-Service -Name "PrinterAgent" -Force -ErrorAction SilentlyContinue
+            Write-Host "PrinterAgent service stopped."
+          } else {
+            Write-Host "PrinterAgent service not found - skipping stop."
+          }
+
+      # 4) Build a fresh venv in the checkout folder and install deps
+      - name: Install Dependencies
+        shell: powershell
+        run: |
+          python -m venv .venv
           .\.venv\Scripts\python.exe -m pip install --upgrade pip
           .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-      - name: Verify Syntax
-        run: |
-          python -m py_compile app.py
 
-      - name: Restart PrinterAgent Service
+      # 5) Make sure the app compiles before we (re)start it
+      - name: Verify Syntax
+        shell: powershell
         run: |
-          nssm restart PrinterAgent
+          .\.venv\Scripts\python.exe -m py_compile app.py
+
+      # 6) Restart the service
+      - name: Restart PrinterAgent Service
+        shell: powershell
+        run: |
+          Start-Service -Name "PrinterAgent"
+          Start-Sleep -Seconds 3
+          $svc = Get-Service -Name "PrinterAgent"
+          Write-Host "PrinterAgent service status: $($svc.Status)"
+          if ($svc.Status -ne "Running") {
+            Write-Error "PrinterAgent failed to start!"
+            exit 1
+          }
