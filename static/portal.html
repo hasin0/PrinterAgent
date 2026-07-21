@@ -193,6 +193,8 @@ button.primary {
     padding: 24px;
     max-width: 480px;
     width: 100%;
+    max-height: 90vh;          
+    overflow-y: auto;        /* NEW — makes it scrollable */
     box-shadow: 0 30px 80px rgba(0,0,0,0.25);
 }
 
@@ -474,35 +476,50 @@ function markStep(step, status) {
 }
 
 function showFinal(data) {
+
     setProgress(100);
 
     const footer = document.getElementById("workflowFooter");
     const box = document.getElementById("resultBox");
     const btn = document.getElementById("downloadBtn");
 
+    // Result box color
     box.classList.remove("success","warning","error");
-
     let cls = "success";
     if (data.status === "ALREADY_EXISTS") cls = "warning";
     else if (["REGISTRATION_FAILED","LOGIN_FAILED","TIMEOUT","UNKNOWN"].includes(data.status)) cls = "error";
     box.classList.add(cls);
 
-let msg = data.message || "Completed.";
+    // Message + ticket
+    let msg = data.message || "Completed.";
+    if (data.ticket_id) {
+        msg += "\n\nFreshService Ticket: SR-" + data.ticket_id;
+    }
+    box.innerText = msg;
 
-if (data.ticket_id) {
-    msg += "\n\nFreshService Ticket: SR-" + data.ticket_id;
-}
+    // Download button (only on success)
+    if (data.download) {
+        btn.href = data.download;
+        btn.style.display = "block";
+    } else {
+        btn.style.display = "none";
+    }
 
-box.innerText = msg;
-
- if (data.download) {
-    btn.href = data.download;
-    btn.style.display = "block";
-} else {
-    btn.style.display = "none";
-}
+    // Show footer (which contains the Close button)
     footer.style.display = "flex";
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 function closeWorkflow() {
     document.getElementById("workflowModal").classList.remove("active");

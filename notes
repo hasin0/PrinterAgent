@@ -23,3 +23,145 @@ Plain Textbatch isn’t fully supported. Syntax highlighting is based on Plain T
 ✅ "Update my app.py fully with EXE flow"
 ✅ "Bundle everything into one installer (no download)"
 ✅ "Prepare this for enterprise deployment (SCCM/Intune)"
+
+
+
+
+
+
+
+
+
+def get_installer_script(ip, name, user, code):
+
+    lines = []
+
+    lines.append("@echo off")
+    lines.append("echo ============================================")
+    lines.append("echo   Sharp Printer Auto Installer")
+    lines.append(f"echo   Printer: {name}")
+    lines.append(f"echo   IP: {ip}")
+    lines.append(f"echo   User: {user}")
+    lines.append(f"echo   Code: {code}")
+    lines.append("echo ============================================")
+    lines.append("echo.")
+
+    lines.append("echo Checking if Sharp driver is already installed...")
+    lines.append(
+        "powershell -Command \"$d = (Get-PrinterDriver | "
+        "Where-Object { $_.Name -like '*Sharp*' } | "
+        "Select-Object -First 1).Name; "
+        "if ($d) { echo DRIVER_EXISTS } else { echo DRIVER_MISSING }\" "
+        "> \"%TEMP%\\driver_check.txt\""
+    )
+    lines.append("findstr /C:\"DRIVER_EXISTS\" \"%TEMP%\\driver_check.txt\" >nul")
+
+    lines.append("if %errorlevel%==0 (")
+    lines.append("    echo Driver already installed - skipping download")
+    lines.append("    goto ADD_PRINTER")
+    lines.append(")")
+
+    lines.append("echo Driver not found - downloading...")
+    lines.append(
+        f"powershell -Command \"Invoke-WebRequest -Uri '{SERVER_BASE_URL}/drivers/{DRIVER_FILE_NAME}' "
+        "-OutFile '%TEMP%\\sharp_driver.exe'\""
+    )
+
+    lines.append("if not exist \"%TEMP%\\sharp_driver.exe\" (")
+    lines.append("    echo WARNING: Driver download failed.")
+    lines.append("    goto ADD_PRINTER")
+    lines.append(")")
+
+    lines.append("start /wait \"\" \"%TEMP%\\sharp_driver.exe\" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART")
+    lines.append("")
+
+    lines.append(":ADD_PRINTER")
+    lines.append("echo.")
+    lines.append("echo Configuring printer...")
+
+    lines.append(
+        f"powershell -Command \"$portName = 'IP_{ip}'; "
+        f"if (-not (Get-PrinterPort -Name $portName -ErrorAction SilentlyContinue)) "
+        f"{{ Add-PrinterPort -Name $portName -PrinterHostAddress '{ip}' }}\""
+    )
+    lines.append("echo Printer port ready")
+
+    lines.append(
+        "powershell -Command \"$d = (Get-PrinterDriver | "
+        "Where-Object { $_.Name -like '*Sharp*' } | "
+        "Select-Object -First 1).Name; "
+        "if (-not $d) { echo 'ERROR: Sharp driver not found'; exit 1 }; "
+        "echo $d\" > \"%TEMP%\\driver_name.txt\""
+    )
+    lines.append("set /p DRIVER_NAME=<\"%TEMP%\\driver_name.txt\"")
+    lines.append("echo Found driver: %DRIVER_NAME%")
+
+    lines.append(
+        f"powershell -Command \"if (-not (Get-Printer -Name '{name}' -ErrorAction SilentlyContinue)) "
+        f"{{ Add-Printer -Name '{name}' -DriverName '%DRIVER_NAME%' -PortName 'IP_{ip}' }}\""
+    )
+    lines.append("echo Printer added")
+
+    lines.append(
+        f"powershell -Command \"(Get-WmiObject -Query "
+        f"\\\"SELECT * FROM Win32_Printer WHERE Name='{name}'\\\").SetDefaultPrinter() | Out-Null\""
+    )
+    lines.append("echo Default printer set")
+
+    lines.append("echo.")
+    lines.append("echo Configuring printer preferences...")
+
+    lines.append("if not exist \"%TEMP%\\printer_config.py\" (")
+    lines.append(
+        f"    powershell -Command \"Invoke-WebRequest -Uri '{SERVER_BASE_URL}/printer_config.py' "
+        "-OutFile '%TEMP%\\printer_config.py'\""
+    )
+    lines.append(") else (")
+    lines.append("    echo Config script already cached")
+    lines.append(")")
+
+    lines.append("if not exist \"%TEMP%\\printer_config.py\" (")
+    lines.append("    echo ERROR: Could not download printer_config.py")
+    lines.append("    goto MANUAL")
+    lines.append(")")
+
+    lines.append("python -c \"import pywinauto\" >nul 2>&1")
+    lines.append("if %errorlevel% NEQ 0 (")
+    lines.append("    echo Installing required dependencies...")
+    lines.append("    python -m pip install pywinauto >nul 2>&1")
+    lines.append(") else (")
+    lines.append("    echo pywinauto already installed")
+    lines.append(")")
+
+    lines.append("echo Running configuration script...")
+    lines.append(f"python \"%TEMP%\\printer_config.py\" \"{name}\" \"{user}\" \"{code}\"")
+
+    lines.append("if %errorlevel%==0 (")
+    lines.append("    echo Preferences configured automatically")
+    lines.append("    goto DONE")
+    lines.append(")")
+
+    lines.append(":MANUAL")
+    lines.append("echo.")
+    lines.append("echo ============================================")
+    lines.append("echo   AUTO-CONFIG FAILED - Manual Setup Needed")
+    lines.append("echo ============================================")
+    lines.append("echo.")
+    lines.append(f"echo Enter Name: {user}")
+    lines.append("pause")
+    lines.append(f"rundll32 printui.dll,PrintUIEntry /e /n \"{name}\"")
+
+    lines.append(":DONE")
+    lines.append("echo.")
+    lines.append("echo ============================================")
+    lines.append("echo INSTALLATION COMPLETE")
+    lines.append("echo ============================================")
+    lines.append("echo.")
+    lines.append(f"echo Printer: {name}")
+    lines.append(f"echo IP: {ip}")
+    lines.append(f"echo User: {user}")
+    lines.append(f"echo Code: {code}")
+    lines.append("echo.")
+    lines.append("pause")
+
+    return "\r\n".join(lines)

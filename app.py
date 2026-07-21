@@ -185,6 +185,11 @@ def register(req: RequestModel):
                 result_text=registration_result,
                 resolved=resolved
             )
+            # ✅ Attach installer on success even for reused tickets
+            if resolved and installer_file_path:
+                from tools.freshservice_tool import attach_file
+                attach_file(ticket_id, installer_file_path)
+
             print(f"Reused existing ticket {ticket_id} (no duplicate created)")
         except Exception as e:
             print("Ticket update failed:", e)
