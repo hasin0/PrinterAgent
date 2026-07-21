@@ -17,8 +17,8 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          .\.venv\Scripts\python.exe -m pip install --upgrade pip
-          .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+          & "C:\Users\Admin\Desktop\PrinterAgent\.venv\Scripts\python.exe" -m pip install --upgrade pip
+          & "C:\Users\Admin\Desktop\PrinterAgent\.venv\Scripts\python.exe" -m pip install -r requirements.txt
 
       - name: Verify Syntax
         run: |
