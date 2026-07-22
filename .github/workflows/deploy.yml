@@ -8,8 +8,10 @@ on:
   workflow_dispatch:
 
 env:
-  VENV_DIR: C:\Users\Admin\Desktop\PrinterAgent\venv
-  HASH_FILE: C:\Users\Admin\Desktop\PrinterAgent\venv\.requirements.hash
+  SOURCE_DIR: C:\actions-runner\_work\PrinterAgent\PrinterAgent
+  TARGET_DIR: C:\PrinterAgent
+  VENV_DIR: C:\PrinterAgent\venv
+  HASH_FILE: C:\PrinterAgent\venv\.requirements.hash
 
 jobs:
   deploy:
@@ -20,27 +22,42 @@ jobs:
       - name: Checkout Latest Code
         uses: actions/checkout@v4
 
+      - name: Sync Files To Production
+        shell: powershell
+        run: |
+          robocopy `
+            "$env:SOURCE_DIR" `
+            "$env:TARGET_DIR" `
+            /E /MIR `
+            /XD venv .venv logs .git __pycache__
+
+          if ($LASTEXITCODE -gt 7) {
+            throw "Robocopy failed"
+          }
+
       - name: Install Dependencies (only if changed)
         shell: powershell
         run: |
 
-          if (-not (Test-Path "requirements.txt")) {
-            Write-Error "requirements.txt not found in repo root."
-            exit 1
+          if (-not (Test-Path "$env:TARGET_DIR\requirements.txt")) {
+            throw "requirements.txt not found"
           }
 
-          $currentHash = (Get-FileHash "requirements.txt" -Algorithm SHA256).Hash
+          $currentHash = (
+            Get-FileHash `
+            "$env:TARGET_DIR\requirements.txt" `
+            -Algorithm SHA256
+          ).Hash
 
           $storedHash = ""
+
           if (Test-Path "$env:HASH_FILE") {
             $storedHash = Get-Content "$env:HASH_FILE" -Raw
           }
 
           $storedHash = $storedHash.Trim()
 
-          $venvPython = "$env:VENV_DIR\Scripts\python.exe"
-
-          if ((Test-Path $venvPython) -and ($currentHash -eq $storedHash)) {
+          if ($currentHash -eq $storedHash) {
 
             Write-Host "requirements unchanged - skipping install"
 
@@ -48,15 +65,15 @@ jobs:
 
             Write-Host "requirements changed - installing dependencies"
 
-            if (-not (Test-Path $venvPython)) {
-              python -m venv "$env:VENV_DIR"
-            }
+            & "$env:VENV_DIR\Scripts\python.exe" `
+              -m pip install --upgrade pip
 
-            & $venvPython -m pip install --upgrade pip
-            & $venvPython -m pip install -r requirements.txt
+            & "$env:VENV_DIR\Scripts\python.exe" `
+              -m pip install `
+              -r "$env:TARGET_DIR\requirements.txt"
 
             $currentHash | Out-File `
-              -FilePath "$env:HASH_FILE" `
+              "$env:HASH_FILE" `
               -Encoding ascii `
               -NoNewline
           }
@@ -64,34 +81,50 @@ jobs:
       - name: Verify Syntax
         shell: powershell
         run: |
-          & "$env:VENV_DIR\Scripts\python.exe" -m py_compile app.py
 
-      - name: Restart PrinterAgent Service
+          cd "$env:TARGET_DIR"
+
+          & "$env:VENV_DIR\Scripts\python.exe" `
+            -m py_compile app.py
+
+      - name: Stop Existing PrinterAgent
+        shell: powershell
+        continue-on-error: true
+        run: |
+
+          Get-Process python* `
+            -ErrorAction SilentlyContinue |
+            Stop-Process -Force
+
+          Start-Sleep -Seconds 2
+
+      - name: Start PrinterAgent
         shell: powershell
         run: |
 
-          Write-Host "Restarting PrinterAgent service..."
+          Start-Process `
+            -FilePath "$env:VENV_DIR\Scripts\python.exe" `
+            -WorkingDirectory "$env:TARGET_DIR" `
+            -ArgumentList "-m uvicorn app:app --host 0.0.0.0 --port 8000"
 
-          try {
+          Start-Sleep -Seconds 5
 
-            Restart-Service -Name "PrinterAgent" -Force -ErrorAction Stop
+      - name: Verify Application
+        shell: powershell
+        run: |
 
-            Write-Host "PrinterAgent restarted successfully using Windows Service."
+          $listener = netstat -ano | Select-String ":8000"
 
+          if (-not $listener) {
+            throw "PrinterAgent failed to start on port 8000"
           }
-          catch {
 
-            Write-Host "Windows Service restart failed."
-            Write-Host "Trying NSSM restart..."
-
-            & "C:\nssm\nssm.exe" restart PrinterAgent
-
-            Write-Host "PrinterAgent restarted using NSSM."
-          }
+          Write-Host "PrinterAgent is running."
 
       - name: Deployment Complete
         shell: powershell
         run: |
-          Write-Host "=========================================="
-          Write-Host "PrinterAgent deployment completed!"
-          Write-Host "=========================================="
+          Write-Host ""
+          Write-Host "========================================"
+          Write-Host " PrinterAgent Deployment Successful "
+          Write-Host "========================================"
