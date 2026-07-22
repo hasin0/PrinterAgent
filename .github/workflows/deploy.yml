@@ -33,8 +33,58 @@ jobs:
             /XD venv .venv logs .git __pycache__ audit build dist tests
 
           $rc = $LASTEXITCODE
-
           Write-Host "Robocopy Exit Code: $rc"
 
           if ($rc -ge 8) {
-            throw
+            throw "Robocopy failed with exit code $rc"
+          }
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install/Update Dependencies
+        shell: powershell
+        run: |
+          $RequirementsFile = "$env:TARGET_DIR\requirements.txt"
+          if (-not (Test-Path $RequirementsFile)) {
+            Write-Host "requirements.txt not found. Skipping dependency installation."
+            exit 0
+          }
+
+          # Calculate hash of the new requirements file
+          $NewHash = (Get-FileHash -Algorithm SHA256 -Path $RequirementsFile).Hash
+          $OldHash = ""
+
+          if (Test-Path $env:HASH_FILE) {
+            $OldHash = Get-Content $env:HASH_FILE
+          }
+
+          if ($NewHash -ne $OldHash) {
+            Write-Host "requirements.txt has changed. Installing dependencies."
+            
+            # Create venv if it doesn't exist
+            if (-not (Test-Path $env:VENV_DIR)) {
+              Write-Host "Creating Python virtual environment at $env:VENV_DIR"
+              python -m venv $env:VENV_DIR
+            }
+
+            # Install dependencies
+            & "$env:VENV_DIR\Scripts\python.exe" -m pip install -r $RequirementsFile
+            & "$env:VENV_DIR\Scripts\python.exe" -m playwright install chromium
+
+            # Update hash file on success
+            $NewHash | Out-File -FilePath $env:HASH_FILE -Encoding utf8
+            Write-Host "Dependencies installed and hash file updated."
+          } else {
+            Write-Host "requirements.txt has not changed. Skipping dependency installation."
+          }
+
+      - name: Restart Application with PM2
+        shell: powershell
+        run: |
+          # Assumes pm2 is installed and the app is named 'PrinterAgent'
+          # You can install pm2 with: npm install -g pm2
+          # Start the app initially with: pm2 start "C:\PrinterAgent\venv\Scripts\python.exe" --name "PrinterAgent" -- -m uvicorn app:app --host 0.0.0.0 --port 8000 --app-dir "C:\PrinterAgent"
+          pm2 restart PrinterAgent --update-env
