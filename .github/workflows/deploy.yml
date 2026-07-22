@@ -32,7 +32,7 @@ jobs:
             /E `
             /XD venv .venv logs .git __pycache__ audit build dist tests
 
-          $rc = $LASTEXITCODE
+          $rc = $LASTEXITCODE # Robocopy exit codes < 8 are success/warnings
           Write-Host "Robocopy Exit Code: $rc"
  
           if ($rc -ge 8) {
@@ -40,7 +40,7 @@ jobs:
           } else {
             Write-Host "Robocopy completed with a success/warning code. Treating as success."
             exit 0
-          }
+          } # Exit 0 to prevent GitHub Actions from failing on non-critical codes
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -48,6 +48,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install/Update Dependencies
+        id: install-deps
         shell: powershell
         run: |
           $RequirementsFile = "$env:TARGET_DIR\requirements.txt"
@@ -57,14 +58,14 @@ jobs:
           }
 
           # Calculate hash of the new requirements file
-          $NewHash = (Get-FileHash -Algorithm SHA256 -Path $RequirementsFile).Hash
+          $CurrentHash = (Get-FileHash -Algorithm SHA256 -Path $RequirementsFile).Hash
           $OldHash = ""
 
           if (Test-Path $env:HASH_FILE) {
-            $OldHash = Get-Content $env:HASH_FILE
+            $OldHash = Get-Content $env:HASH_FILE -Raw
           }
 
-          if ($NewHash -ne $OldHash) {
+          if ($CurrentHash -ne $OldHash.Trim()) {
             Write-Host "requirements.txt has changed. Installing dependencies."
             
             # Create venv if it doesn't exist
@@ -74,20 +75,65 @@ jobs:
             }
 
             # Install dependencies
+            & "$env:VENV_DIR\Scripts\python.exe" -m pip install --upgrade pip
             & "$env:VENV_DIR\Scripts\python.exe" -m pip install -r $RequirementsFile
             & "$env:VENV_DIR\Scripts\python.exe" -m playwright install chromium
 
             # Update hash file on success
-            $NewHash | Out-File -FilePath $env:HASH_FILE -Encoding utf8
+            $CurrentHash | Out-File -FilePath $env:HASH_FILE -Encoding utf8 -NoNewline
             Write-Host "Dependencies installed and hash file updated."
           } else {
             Write-Host "requirements.txt has not changed. Skipping dependency installation."
           }
 
-      - name: Restart Application with PM2
+      - name: Verify Python Syntax
         shell: powershell
         run: |
-          # Assumes pm2 is installed and the app is named 'PrinterAgent'
-          # You can install pm2 with: npm install -g pm2
-          # Start the app initially with: pm2 start "C:\PrinterAgent\venv\Scripts\python.exe" --name "PrinterAgent" -- -m uvicorn app:app --host 0.0.0.0 --port 8000 --app-dir "C:\PrinterAgent"
-          pm2 restart PrinterAgent --update-env
+          Write-Host "Checking Python syntax for app.py..."
+          & "$env:VENV_DIR\Scripts\python.exe" -m py_compile "$env:TARGET_DIR\app.py"
+          Write-Host "Syntax check passed."
+
+      - name: Stop Existing PrinterAgent Service
+        shell: powershell
+        continue-on-error: true
+        run: |
+          # This is safer than killing all python.exe processes
+          # It finds the process listening on port 8000 and stops it.
+          $process = Get-NetTCPConnection -LocalPort 8000 -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($process) {
+            $pid = $process.OwningProcess
+            Write-Host "Found existing PrinterAgent service on port 8000 (PID: $pid). Stopping it..."
+            Stop-Process -Id $pid -Force
+            Write-Host "Process stopped."
+          } else {
+            Write-Host "No existing PrinterAgent service found on port 8000."
+          }
+          Start-Sleep -Seconds 3
+
+      - name: Start PrinterAgent Service
+        shell: powershell
+        run: |
+          Write-Host "Starting PrinterAgent as a background process..."
+          Start-Process `
+            -FilePath "$env:VENV_DIR\Scripts\python.exe" `
+            -WorkingDirectory "$env:TARGET_DIR" `
+            -ArgumentList "-m uvicorn app:app --host 0.0.0.0 --port 8000"
+
+      - name: Verify Application is Running
+        shell: powershell
+        run: |
+          Write-Host "Waiting for application to start..."
+          Start-Sleep -Seconds 5
+
+          $listener = Get-NetTCPConnection -LocalPort 8000 -State Listen -ErrorAction SilentlyContinue
+
+          if (-not $listener) {
+            throw "CRITICAL: PrinterAgent failed to start and is not listening on port 8000."
+          }
+
+          Write-Host "✅ SUCCESS: PrinterAgent is running and listening on port 8000."
+          Write-Host ""
+          Write-Host "========================================"
+          Write-Host "  PrinterAgent Deployment Successful"
+          Write-Host "========================================"
+          Write-Host ""
