@@ -2,7 +2,9 @@ name: Deploy PrinterAgent
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+
   workflow_dispatch:
 
 env:
@@ -14,6 +16,7 @@ jobs:
     runs-on: self-hosted
 
     steps:
+
       - name: Checkout Latest Code
         uses: actions/checkout@v4
 
@@ -66,12 +69,29 @@ jobs:
       - name: Restart PrinterAgent Service
         shell: powershell
         run: |
+
           Write-Host "Restarting PrinterAgent service..."
-          nssm restart PrinterAgent
+
           try {
-              Restart-Service -Name "PrinterAgent" -Force
-              Write-Host "PrinterAgent restarted successfully."
-          } catch {
-              Write-Host "WARNING: Could not restart service automatically."
-              Write-Host $_.Exception.Message
+
+            Restart-Service -Name "PrinterAgent" -Force -ErrorAction Stop
+
+            Write-Host "PrinterAgent restarted successfully using Windows Service."
+
           }
+          catch {
+
+            Write-Host "Windows Service restart failed."
+            Write-Host "Trying NSSM restart..."
+
+            & "C:\nssm\nssm.exe" restart PrinterAgent
+
+            Write-Host "PrinterAgent restarted using NSSM."
+          }
+
+      - name: Deployment Complete
+        shell: powershell
+        run: |
+          Write-Host "=========================================="
+          Write-Host "PrinterAgent deployment completed!"
+          Write-Host "=========================================="
