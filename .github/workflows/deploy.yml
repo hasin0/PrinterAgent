@@ -34,9 +34,12 @@ jobs:
 
           $rc = $LASTEXITCODE
           Write-Host "Robocopy Exit Code: $rc"
-
+ 
           if ($rc -ge 8) {
             throw "Robocopy failed with exit code $rc"
+          } else {
+            Write-Host "Robocopy completed with a success/warning code. Treating as success."
+            exit 0
           }
 
       - name: Set up Python
