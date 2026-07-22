@@ -82,8 +82,9 @@ def classify_result(registration_result):
 
 
 def build_description(name, code, email, printer_name, printer_ip,
-                      location, log_status, registration_result):
-    return (
+                      location, log_status, registration_result,
+                      download_url=None):
+    desc = (
         "<b>Printer Access Request via PrinterAgent</b><br><br>"
         f"<b>User:</b> {name}<br>"
         f"<b>User Code:</b> {code}<br>"
@@ -97,6 +98,15 @@ def build_description(name, code, email, printer_name, printer_ip,
         f"<b>Status:</b> {log_status}<br><br>"
         f"<b>Details:</b><br>{registration_result}"
     )
+
+    # Add clickable installer download link (avoids blocked BAT attachments)
+    if download_url:
+        desc += (
+            "<br><br><b>Printer Installer:</b><br>"
+            f'<a href="{download_url}">Download Printer Installer</a>'
+        )
+
+    return desc
 
 
 def generate_installer_file(printer_ip, printer_name, name, code):
@@ -142,7 +152,7 @@ def register(req: RequestModel):
     printer_name = selected_printer["display_name"]
     printer_location = selected_printer["location"]
 
-    # Sharp Registration
+    # ---- Sharp Registration ----
     try:
         registration_result = register_user_on_sharp(
             printer_ip=printer_ip,
@@ -155,19 +165,35 @@ def register(req: RequestModel):
 
     log_status = classify_result(registration_result)
 
-    # Generate installer only on success
+    # ---- Generate installer only on success ----
     installer_file_path = None
     if log_status == "REGISTRATION_SUCCESS":
         installer_file_path = generate_installer_file(
             printer_ip, printer_name, req.name, req.user_number
         )
 
+    # ---- Build installer download URL ----
+    query_params = urlencode({
+        "ip": printer_ip,
+        "name": printer_name,
+        "user": req.name,
+        "code": req.user_number
+    })
+
+    download_url = (
+        f"{SERVER_BASE_URL}/api/installer?{query_params}"
+        if log_status == "REGISTRATION_SUCCESS"
+        else None
+    )
+
+    # ---- Build FreshService description (with download link) ----
     fs_status_code = map_status_to_freshservice(log_status)
 
     description = build_description(
         req.name, req.user_number, req.email,
         printer_name, printer_ip, printer_location,
-        log_status, registration_result
+        log_status, registration_result,
+        download_url=download_url
     )
 
     # ---- Duplicate ticket prevention ----
@@ -185,11 +211,6 @@ def register(req: RequestModel):
                 result_text=registration_result,
                 resolved=resolved
             )
-            # ✅ Attach installer on success even for reused tickets
-            if resolved and installer_file_path:
-                from tools.freshservice_tool import attach_file
-                attach_file(ticket_id, installer_file_path)
-
             print(f"Reused existing ticket {ticket_id} (no duplicate created)")
         except Exception as e:
             print("Ticket update failed:", e)
@@ -211,7 +232,7 @@ def register(req: RequestModel):
             print("Ticket creation failed:", e)
             ticket_id = None
 
-    # Logging
+    # ---- Logging ----
     try:
         write_install_log(
             name=req.name,
@@ -227,15 +248,8 @@ def register(req: RequestModel):
     except Exception as e:
         print("Log Error:", e)
 
-    # Installer download URL
-    query_params = urlencode({
-        "ip": printer_ip,
-        "name": printer_name,
-        "user": req.name,
-        "code": req.user_number
-    })
-
-    download_url = (
+    # ---- Response (portal uses relative download URL) ----
+    portal_download = (
         "/api/installer?" + query_params
         if log_status == "REGISTRATION_SUCCESS"
         else None
@@ -246,7 +260,7 @@ def register(req: RequestModel):
         "message": registration_result,
         "status": log_status,
         "ticket_id": ticket_id,
-        "download": download_url
+        "download": portal_download
     }
 
 
@@ -277,7 +291,6 @@ def retry(req: RetryModel):
     log_status = classify_result(registration_result)
     success = (log_status == "REGISTRATION_SUCCESS")
 
-    # Generate installer if success
     if success:
         generate_installer_file(
             printer_ip, printer_name, req.name, req.user_number
@@ -522,4 +535,5 @@ def get_installer_script(ip, name, user, code):
 # STATIC FILES
 # ================================
 app.mount("/drivers", StaticFiles(directory="static/drivers"), name="drivers")
+app.mount("/tools", StaticFiles(directory="static/tools"), name="tools")
 app.mount("/static", StaticFiles(directory="static"), name="static")
