@@ -52,8 +52,15 @@ jobs:
             exit 0
           }
 
-          # Calculate hash of the new requirements file
-          $CurrentHash = (Get-FileHash -Algorithm SHA256 -Path $RequirementsFile).Hash
+          # Calculate hash of the new requirements file using certutil for backward compatibility.
+          # Get-FileHash is not available on older PowerShell versions.
+          Write-Host "Calculating SHA256 hash for requirements.txt using certutil..."
+          $CertUtilOutput = certutil -hashfile "$RequirementsFile" SHA256
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to calculate file hash using certutil."
+          }
+          # The hash is on the second line of the output.
+          $CurrentHash = $CertUtilOutput[1] -replace '\s',''
           $OldHash = ""
 
           if (Test-Path $env:HASH_FILE) {
