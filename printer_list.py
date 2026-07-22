@@ -24,10 +24,10 @@ PRINTERS = {
         "ip": "172.16.18.116",
         "location": "E-BLOCK 21A"
     },
-    "GED_RECORDS_PRINTER": {
-        "display_name": "GED RECORDS OFFICE SHARP PRINTER",
-        "ip": "172.16.17.226",
-        "location": "GED RECORDS OFFICE"
+    "21C_PRINTER": {
+        "display_name": "INTERNATIONAL PROCUREMENT OFFICE SHARP PRINTER",
+        "ip": "172.16.18.211",
+        "location": "21C PROCUREMENT OFFICE"
     },
     "DANIELE_OFFICE_PRINTER": {
         "display_name": "DANIELE OFFICE PRINTER",
@@ -78,4 +78,8 @@ PRINTERS = {
         "ip": "172.16.18.137",
         "location": "E-BLOCK LOCK ICD"
     }
+
+
+
+    
 } 
