@@ -25,110 +25,16 @@ jobs:
       - name: Sync Files To Production
         shell: powershell
         run: |
+
           robocopy `
             "$env:SOURCE_DIR" `
             "$env:TARGET_DIR" `
             /E `
-            /XD venv .venv logs .git __pycache__
+            /XD venv .venv logs .git __pycache__ audit build dist tests
 
           $rc = $LASTEXITCODE
 
           Write-Host "Robocopy Exit Code: $rc"
 
           if ($rc -ge 8) {
-            throw "Robocopy failed with exit code $rc"
-          }
-
-      - name: Install Dependencies (only if changed)
-        shell: powershell
-        run: |
-
-          if (-not (Test-Path "$env:TARGET_DIR\requirements.txt")) {
-            throw "requirements.txt not found"
-          }
-
-          $currentHash = (
-            Get-FileHash `
-            "$env:TARGET_DIR\requirements.txt" `
-            -Algorithm SHA256
-          ).Hash
-
-          $storedHash = ""
-
-          if (Test-Path "$env:HASH_FILE") {
-            $storedHash = Get-Content "$env:HASH_FILE" -Raw
-          }
-
-          $storedHash = $storedHash.Trim()
-
-          if ($currentHash -eq $storedHash) {
-
-            Write-Host "requirements unchanged - skipping install"
-
-          } else {
-
-            Write-Host "requirements changed - installing dependencies"
-
-            & "$env:VENV_DIR\Scripts\python.exe" `
-              -m pip install --upgrade pip
-
-            & "$env:VENV_DIR\Scripts\python.exe" `
-              -m pip install `
-              -r "$env:TARGET_DIR\requirements.txt"
-
-            $currentHash | Out-File `
-              "$env:HASH_FILE" `
-              -Encoding ascii `
-              -NoNewline
-          }
-
-      - name: Verify Syntax
-        shell: powershell
-        run: |
-
-          cd "$env:TARGET_DIR"
-
-          & "$env:VENV_DIR\Scripts\python.exe" `
-            -m py_compile app.py
-
-      - name: Stop Existing PrinterAgent
-        shell: powershell
-        continue-on-error: true
-        run: |
-
-          Get-Process python* `
-            -ErrorAction SilentlyContinue |
-            Stop-Process -Force
-
-          Start-Sleep -Seconds 2
-
-      - name: Start PrinterAgent
-        shell: powershell
-        run: |
-
-          Start-Process `
-            -FilePath "$env:VENV_DIR\Scripts\python.exe" `
-            -WorkingDirectory "$env:TARGET_DIR" `
-            -ArgumentList "-m uvicorn app:app --host 0.0.0.0 --port 8000"
-
-          Start-Sleep -Seconds 5
-
-      - name: Verify Application
-        shell: powershell
-        run: |
-
-          $listener = netstat -ano | Select-String ":8000"
-
-          if (-not $listener) {
-            throw "PrinterAgent failed to start on port 8000"
-          }
-
-          Write-Host "PrinterAgent is running."
-
-      - name: Deployment Complete
-        shell: powershell
-        run: |
-          Write-Host ""
-          Write-Host "========================================"
-          Write-Host " PrinterAgent Deployment Successful "
-          Write-Host "========================================"
+            throw
