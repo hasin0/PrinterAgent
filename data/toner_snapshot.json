@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-08-03 17:38:05",
+  "saved_at": "2026-08-03 17:39:24",
   "count": 15,
   "data": [
     {
@@ -124,7 +124,7 @@
         {
           "name": "Waste Toner",
           "index": "6",
-          "max_capacity": "-2",
+          "max_capacity": null,
           "current_level": "100",
           "percentage": null,
           "status": "Unknown"
@@ -134,125 +134,125 @@
         {
           "name": "Cyan Photoconductive Drum (DC)",
           "index": "7",
-          "max_capacity": "100",
+          "max_capacity": null,
           "current_level": "80",
-          "percentage": 80.0,
-          "status": "Healthy"
+          "percentage": null,
+          "status": "Unknown"
         },
         {
           "name": "Magenta Photoconductive Drum (DM)",
           "index": "8",
-          "max_capacity": "100",
+          "max_capacity": null,
           "current_level": "80",
-          "percentage": 80.0,
-          "status": "Healthy"
+          "percentage": null,
+          "status": "Unknown"
         },
         {
           "name": "Yellow Photoconductive Drum (DY)",
           "index": "9",
-          "max_capacity": "100",
+          "max_capacity": null,
           "current_level": "80",
-          "percentage": 80.0,
-          "status": "Healthy"
+          "percentage": null,
+          "status": "Unknown"
         },
         {
           "name": "Black Photoconductive Drum (DK)",
           "index": "10",
-          "max_capacity": "100",
+          "max_capacity": null,
           "current_level": "78",
-          "percentage": 78.0,
-          "status": "Healthy"
+          "percentage": null,
+          "status": "Unknown"
         },
         {
           "name": "Maintenance (TA)",
           "index": "16",
-          "max_capacity": "100",
+          "max_capacity": null,
           "current_level": "92",
-          "percentage": 92.0,
-          "status": "Healthy"
+          "percentage": null,
+          "status": "Unknown"
         },
         {
           "name": "Maintenance (CA)",
           "index": "17",
-          "max_capacity": "100",
+          "max_capacity": null,
           "current_level": "93",
-          "percentage": 93.0,
-          "status": "Healthy"
+          "percentage": null,
+          "status": "Unknown"
         },
         {
           "name": "Fusing Belt/Roller (FK1)",
           "index": "18",
-          "max_capacity": "100",
+          "max_capacity": null,
           "current_level": "92",
-          "percentage": 92.0,
-          "status": "Healthy"
+          "percentage": null,
+          "status": "Unknown"
         },
         {
           "name": "Pressure Roller (FK2)",
           "index": "19",
-          "max_capacity": "100",
+          "max_capacity": null,
           "current_level": "92",
-          "percentage": 92.0,
-          "status": "Healthy"
+          "percentage": null,
+          "status": "Unknown"
         },
         {
           "name": "Transfer Belt (TK1)",
           "index": "22",
-          "max_capacity": "100",
+          "max_capacity": null,
           "current_level": "92",
-          "percentage": 92.0,
-          "status": "Healthy"
+          "percentage": null,
+          "status": "Unknown"
         },
         {
           "name": "Secondary Transfer Belt/Roller (TK2)",
           "index": "23",
-          "max_capacity": "100",
+          "max_capacity": null,
           "current_level": "92",
-          "percentage": 92.0,
-          "status": "Healthy"
+          "percentage": null,
+          "status": "Unknown"
         },
         {
           "name": "Cyan Main Charger (MCC)",
           "index": "25",
-          "max_capacity": "100",
+          "max_capacity": null,
           "current_level": "80",
-          "percentage": 80.0,
-          "status": "Healthy"
+          "percentage": null,
+          "status": "Unknown"
         },
         {
           "name": "Magenta Main Charger (MCM)",
           "index": "26",
-          "max_capacity": "100",
+          "max_capacity": null,
           "current_level": "80",
-          "percentage": 80.0,
-          "status": "Healthy"
+          "percentage": null,
+          "status": "Unknown"
         },
         {
           "name": "Yellow Main Charger (MCY)",
           "index": "27",
-          "max_capacity": "100",
+          "max_capacity": null,
           "current_level": "80",
-          "percentage": 80.0,
-          "status": "Healthy"
+          "percentage": null,
+          "status": "Unknown"
         },
         {
           "name": "Black Main Charger (MCK)",
           "index": "28",
-          "max_capacity": "100",
+          "max_capacity": null,
           "current_level": "78",
-          "percentage": 78.0,
-          "status": "Healthy"
+          "percentage": null,
+          "status": "Unknown"
         },
         {
           "name": "Transfer Blade (TK5)",
           "index": "31",
-          "max_capacity": "100",
+          "max_capacity": null,
           "current_level": "-3",
           "percentage": null,
           "status": "Unknown"
         }
       ],
-      "last_checked": "2026-08-03 17:32:31",
+      "last_checked": "2026-08-03 17:39:08",
       "error": null
     },
     {
@@ -654,7 +654,7 @@
           "status": "Unknown"
         }
       ],
-      "last_checked": "2026-08-03 17:31:32",
+      "last_checked": "2026-08-03 17:39:24",
       "error": null
     },
     {
