@@ -1,0 +1,24 @@
+[
+  {
+    "timestamp": "2026-08-01 18:01:46",
+    "user": "Hassan.Abdulmalik",
+    "computer": "DPRPFTZ-LT-0110",
+    "success": false,
+    "message": "SAP Logon is open. Close SAP Logon and try again (or deploy with force=true to close it automatically).",
+    "systems": [
+      "RSQ",
+      "RSP"
+    ]
+  },
+  {
+    "timestamp": "2026-08-01 18:01:57",
+    "user": "Hassan.Abdulmalik",
+    "computer": "DPRPFTZ-LT-0110",
+    "success": true,
+    "message": "SAP configuration completed successfully.",
+    "systems": [
+      "RSQ",
+      "RSP"
+    ]
+  }
+]

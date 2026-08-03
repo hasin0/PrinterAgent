@@ -24,11 +24,7 @@ PRINTERS = {
         "ip": "172.16.18.116",
         "location": "E-BLOCK 21A"
     },
-    "21C_PRINTER": {
-        "display_name": "INTERNATIONAL PROCUREMENT OFFICE SHARP PRINTER",
-        "ip": "172.16.18.211",
-        "location": "21C PROCUREMENT OFFICE"
-    },
+    
     "DANIELE_OFFICE_PRINTER": {
         "display_name": "DANIELE OFFICE PRINTER",
         "ip": "172.16.16.42",
@@ -77,9 +73,17 @@ PRINTERS = {
         "display_name": "ICD PRINTER",
         "ip": "172.16.18.137",
         "location": "E-BLOCK LOCK ICD"
+    },
+
+    "21C_PRINTER": {
+        "display_name": "INTERNATIONAL PROCUREMENT OFFICE SHARP PRINTER",
+        "ip": "172.16.18.211",
+        "location": "21C PROCUREMENT OFFICE"
+    },
+
+    "2 MCR_PRINTER": {
+        "display_name": "2 MCR PRINTER",
+        "ip": "172.20.101.197",
+        "location": "MCR OFFICE"
     }
-
-
-
-    
-} 
+}

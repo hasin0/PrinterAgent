@@ -4,14 +4,11 @@
 <meta charset="UTF-8">
 <title>PrinterAgent — Operations Center</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
-
 /* ================================
    THEME VARIABLES
    ================================ */
@@ -30,7 +27,6 @@
     --shadow: 0 6px 20px rgba(15,23,42,0.05);
     --radius: 16px;
 }
-
 [data-theme="dark"] {
     --bg: #0b1220;
     --panel: #131c30;
@@ -67,9 +63,7 @@ body {
     border-bottom: 1px solid var(--border);
     transition: background 0.4s ease;
 }
-
 .brand { display:flex; align-items:center; gap:12px; }
-
 .brand .logo {
     width:34px; height:34px;
     border-radius:10px;
@@ -78,12 +72,10 @@ body {
     display:flex; align-items:center; justify-content:center;
     font-weight:800;
 }
-
 .brand strong { font-size:14px; }
 .brand span { font-size:12px; color:var(--sub); display:block; }
 
 .topbar-actions { display:flex; gap:12px; align-items:center; }
-
 .topbar-actions a {
     font-size:13px;
     text-decoration:none;
@@ -93,7 +85,6 @@ body {
     border-radius: 10px;
     background: rgba(0,103,184,0.08);
 }
-
 .icon-btn {
     width:34px; height:34px;
     border-radius:10px;
@@ -113,7 +104,6 @@ body {
 .cols-4 { grid-template-columns: repeat(4, 1fr); }
 .cols-3 { grid-template-columns: repeat(3, 1fr); }
 .cols-2 { grid-template-columns: 1fr 1fr; }
-
 @media (max-width:1100px) {
     .cols-4 { grid-template-columns: repeat(2,1fr); }
     .cols-3 { grid-template-columns: 1fr; }
@@ -143,7 +133,6 @@ body {
     width:34px; height:34px; border-radius:10px;
     display:flex; align-items:center; justify-content:center; font-size:15px;
 }
-
 .b1 { background: rgba(0,103,184,.12); color: var(--brand); }
 .b2 { background: rgba(46,125,50,.12); color: var(--success); }
 .b3 { background: rgba(198,40,40,.12); color: var(--error); }
@@ -189,19 +178,16 @@ body {
    TABLE
    ================================ */
 .table-tools { display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
-
 .table-tools input,
 .table-tools select {
     padding:8px 12px; border-radius:8px; border:1px solid var(--border);
     background: var(--panel); color: var(--text); font-size:13px;
 }
-
 .table-tools button {
     padding:8px 12px; border-radius:8px; border:1px solid var(--border);
     background: var(--panel); color: var(--text);
     cursor:pointer; font-weight:600; font-size:12px;
 }
-
 .table-wrap { overflow:auto; border-radius:10px; }
 table { width:100%; border-collapse:collapse; font-size:12.5px; }
 th, td { padding:10px; text-align:left; border-bottom:1px solid var(--border); }
@@ -238,7 +224,6 @@ tr:hover { background: rgba(0,103,184,.04); }
     transition: 0.2s;
 }
 .retry-btn:hover { opacity: 0.85; transform: translateY(-1px); }
-
 .retry-all-btn {
     padding: 8px 14px;
     border: none;
@@ -280,8 +265,203 @@ tr:hover { background: rgba(0,103,184,.04); }
     border-radius:10px; font-size:12.5px; font-weight:600;
     color: var(--brand); margin-bottom:8px; text-decoration:none;
 }
+
+/* ================================
+   TONER MONITOR
+   ================================ */
+.toner-summary {
+    display:grid;
+    grid-template-columns:repeat(5, 1fr);
+    gap:14px;
+    margin-bottom:16px;
+}
+@media (max-width:1100px){ .toner-summary{ grid-template-columns:repeat(2,1fr); } }
+
+.toner-summary .mini {
+    background: var(--bg);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:12px 14px;
+    text-align:center;
+}
+.toner-summary .mini .n { font-size:20px; font-weight:800; }
+.toner-summary .mini .l { font-size:11px; color:var(--sub); text-transform:uppercase; letter-spacing:.4px; margin-top:2px; }
+.toner-summary .mini.healthy .n  { color: var(--success); }
+.toner-summary .mini.moderate .n { color: var(--warning); }
+.toner-summary .mini.low .n      { color:#f97316; }
+.toner-summary .mini.critical .n { color: var(--error); }
+.toner-summary .mini.offline .n  { color: var(--sub); }
+
+.toner-toolbar {
+    display:flex; gap:8px; flex-wrap:wrap;
+    margin-bottom:14px; align-items:center; justify-content:space-between;
+}
+.toner-pills { display:flex; gap:6px; flex-wrap:wrap; }
+.toner-pill {
+    padding:6px 12px; border-radius:999px; font-size:11.5px; font-weight:600;
+    border:1px solid var(--border); background:var(--bg); color:var(--sub);
+    cursor:pointer; user-select:none;
+}
+.toner-pill.active { color:#fff; border-color:transparent; }
+.toner-pill[data-tf="All"].active{ background:var(--brand); }
+.toner-pill[data-tf="Critical"].active{ background:var(--error); }
+.toner-pill[data-tf="Low"].active{ background:#f97316; }
+.toner-pill[data-tf="Moderate"].active{ background:var(--warning); color:#1a1a1a; }
+.toner-pill[data-tf="Healthy"].active{ background:var(--success); }
+.toner-pill[data-tf="Offline"].active{ background:#64748b; }
+
+.toner-refresh-btn {
+    padding:8px 12px; border-radius:8px; border:1px solid var(--border);
+    background: var(--panel); color: var(--text);
+    cursor:pointer; font-weight:600; font-size:12px;
+}
+.toner-grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(270px, 1fr));
+    gap:14px;
+}
+.toner-card {
+    background: var(--bg);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px 16px;
+}
+.toner-card-top {
+    display:flex; justify-content:space-between; align-items:flex-start;
+    margin-bottom:10px;
+}
+.toner-card-name { font-size:13px; font-weight:700; }
+.toner-card-loc { font-size:11px; color:var(--sub); margin-top:2px; }
+.toner-status-badge {
+    font-size:10.5px; font-weight:700; padding:4px 9px; border-radius:999px;
+    white-space:nowrap;
+}
+.ts-Healthy  { background:rgba(46,125,50,0.15);  color:var(--success); }
+.ts-Moderate { background:rgba(245,124,0,0.15);  color:var(--warning); }
+.ts-Low      { background:rgba(249,115,22,0.15); color:#f97316; }
+.ts-Critical { background:rgba(198,40,40,0.15);  color:var(--error); }
+.ts-Offline  { background:rgba(100,116,139,0.15);color:var(--sub); }
+.ts-Unknown  { background:rgba(100,116,139,0.15);color:var(--sub); }
+
+.toner-bar-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:11.5px; }
+.toner-bar-label { width:56px; flex-shrink:0; color:var(--sub); }
+.toner-bar-track { flex:1; height:7px; border-radius:6px; background:var(--border); overflow:hidden; }
+.toner-bar-fill { height:100%; border-radius:6px; }
+.toner-bar-fill.c { background:#06b6d4; }
+.toner-bar-fill.m { background:#ec4899; }
+.toner-bar-fill.y { background:#eab308; }
+.toner-bar-fill.k { background:#64748b; }
+.toner-bar-pct { width:34px; text-align:right; font-weight:700; }
+
+.toner-offline-msg {
+    font-size:11.5px; color:var(--sub);
+    background: rgba(198,40,40,0.06);
+    border:1px dashed rgba(198,40,40,0.3);
+    padding:8px 10px; border-radius:8px;
+}
+.toner-empty { text-align:center; padding:30px; color:var(--sub); font-size:13px; }
+
+/* ================================
+   SAP CONFIGURATION
+   ================================ */
+.sap-summary {
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:14px;
+    margin-bottom:16px;
+}
+@media (max-width:1100px){ .sap-summary{ grid-template-columns:repeat(2,1fr); } }
+
+.sap-summary .mini {
+    background: var(--bg);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:12px 14px;
+    text-align:center;
+}
+.sap-summary .mini .n { font-size:18px; font-weight:800; }
+.sap-summary .mini .l {
+    font-size:11px; color:var(--sub); text-transform:uppercase;
+    letter-spacing:.4px; margin-top:2px;
+}
+.sap-summary .mini .n.ok   { color: var(--success); }
+.sap-summary .mini .n.bad  { color: var(--error); }
+.sap-summary .mini .n.warn { color: var(--warning); }
+.sap-summary .mini .n.idle { color: var(--sub); }
+
+.sap-toolbar {
+    display:flex; gap:8px; flex-wrap:wrap;
+    align-items:center; margin-bottom:14px;
+}
+.sap-btn {
+    padding:8px 14px; border-radius:8px;
+    border:1px solid var(--border);
+    background: var(--panel); color: var(--text);
+    cursor:pointer; font-weight:600; font-size:12px;
+    transition:.2s;
+}
+.sap-btn:hover { transform:translateY(-1px); }
+.sap-btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+.sap-btn.primary {
+    background: linear-gradient(135deg, var(--brand), var(--brand-2));
+    color:#fff; border-color:transparent;
+}
+
+.sap-systems {
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));
+    gap:14px;
+}
+.sap-sys {
+    background: var(--bg);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px 16px;
+    display:flex; align-items:flex-start; gap:12px;
+}
+.sap-sys .dot {
+    width:10px; height:10px; border-radius:50%;
+    background: var(--sub); flex-shrink:0; margin-top:5px;
+}
+.sap-sys .dot.on  { background: var(--success); box-shadow:0 0 0 4px rgba(46,125,50,.15); }
+.sap-sys .dot.off { background: var(--error);   box-shadow:0 0 0 4px rgba(198,40,40,.13); }
+.sap-sys .info { flex:1; min-width:0; }
+.sap-sys .sid  { font-size:13px; font-weight:700; }
+.sap-sys .desc { font-size:11.5px; color:var(--sub); margin-top:2px; }
+.sap-sys .meta { font-size:11px; color:var(--sub); margin-top:6px; }
+.sap-sys .state {
+    font-size:10.5px; font-weight:700; padding:4px 9px;
+    border-radius:999px; white-space:nowrap;
+}
+.ss-ready   { background:rgba(46,125,50,.15);  color:var(--success); }
+.ss-offline { background:rgba(245,124,0,.15);  color:var(--warning); }
+.ss-missing { background:rgba(198,40,40,.15);  color:var(--error); }
+.ss-unknown { background:rgba(100,116,139,.15);color:var(--sub); }
+
+.sap-progress { margin-top:16px; display:none; }
+.sap-progress.show { display:block; }
+.sap-step {
+    display:flex; align-items:center; gap:10px;
+    font-size:12.5px; padding:6px 0; opacity:.4; color:var(--sub);
+}
+.sap-step.active { opacity:1; color:var(--text); }
+.sap-step.done   { opacity:1; color:var(--success); }
+.sap-step.fail   { opacity:1; color:var(--error); }
+.sap-step .ic { width:18px; text-align:center; font-weight:700; }
+
+.sap-result {
+    margin-top:14px; padding:11px 14px;
+    border-radius:10px; font-size:12.5px; display:none;
+}
+.sap-result.show { display:block; }
+.sap-result.ok  { background:rgba(46,125,50,.12); color:var(--success); }
+.sap-result.err { background:rgba(198,40,40,.12); color:var(--error); }
+
+.sap-spin { display:inline-block; animation:sapspin 1s linear infinite; }
+@keyframes sapspin { to { transform:rotate(360deg); } }
 </style>
 </head>
+
 <body>
 
 <!-- ================================ TOPBAR ================================ -->
@@ -296,6 +476,8 @@ tr:hover { background: rgba(0,103,184,.04); }
     <div class="topbar-actions">
         <a href="/">Home</a>
         <a href="/portal">Portal</a>
+        <a href="#tonerSection">Toner</a>
+        <a href="#sapSection">SAP</a>
         <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">🌓</button>
         <span style="font-size:12px;color:var(--sub)">Live · <span id="lastUpdate">--:--</span></span>
     </div>
@@ -311,6 +493,8 @@ tr:hover { background: rgba(0,103,184,.04); }
     <div class="kpi"><div class="icon b4">🖨</div><div class="label">Total Printers</div><div class="value" id="k_printers">0</div><div class="sub">From inventory</div></div>
     <div class="kpi"><div class="icon b6">🟢</div><div class="label">Online Printers</div><div class="value" id="k_online">0</div><div class="sub">Live monitoring</div></div>
     <div class="kpi"><div class="icon b3">🔴</div><div class="label">Offline Printers</div><div class="value" id="k_offline">0</div><div class="sub">Requires attention</div></div>
+    <div class="kpi"><div class="icon b5">🧴</div><div class="label">Critical Toner</div><div class="value" id="k_toner_critical">0</div><div class="sub">Needs replacement</div></div>
+    <div class="kpi"><div class="icon b2">🖨</div><div class="label">Toner Healthy</div><div class="value" id="k_toner_healthy">0</div><div class="sub">Good supply level</div></div>
 </div>
 
 <!-- ================================ CHARTS ================================ -->
@@ -327,7 +511,6 @@ tr:hover { background: rgba(0,103,184,.04); }
 
 <!-- ================================ TABLE + FEED ================================ -->
 <div class="grid cols-3">
-
     <div class="panel" style="grid-column: span 2;">
         <h3>Recent Registrations <span>Live from /api/logs</span></h3>
 
@@ -379,7 +562,67 @@ tr:hover { background: rgba(0,103,184,.04); }
         <h3>Live Activity Feed</h3>
         <div id="feed"></div>
     </div>
+</div>
 
+<!-- ================================ TONER MONITOR ================================ -->
+<div class="panel" id="tonerSection">
+    <h3>Toner &amp; Consumables Monitor <span id="tonerLastChecked">Loading...</span></h3>
+
+    <div class="toner-summary">
+        <div class="mini healthy"><div class="n" id="t_healthy">0</div><div class="l">Healthy</div></div>
+        <div class="mini moderate"><div class="n" id="t_moderate">0</div><div class="l">Moderate</div></div>
+        <div class="mini low"><div class="n" id="t_low">0</div><div class="l">Low</div></div>
+        <div class="mini critical"><div class="n" id="t_critical">0</div><div class="l">Critical</div></div>
+        <div class="mini offline"><div class="n" id="t_offline">0</div><div class="l">Offline</div></div>
+    </div>
+
+    <div class="toner-toolbar">
+        <div class="toner-pills" id="tonerPills">
+            <div class="toner-pill active" data-tf="All">All</div>
+            <div class="toner-pill" data-tf="Critical">Critical</div>
+            <div class="toner-pill" data-tf="Low">Low</div>
+            <div class="toner-pill" data-tf="Moderate">Moderate</div>
+            <div class="toner-pill" data-tf="Healthy">Healthy</div>
+            <div class="toner-pill" data-tf="Offline">Offline</div>
+        </div>
+        <button class="toner-refresh-btn" onclick="loadToners(true)">🔄 Refresh Toner</button>
+    </div>
+
+    <div class="toner-grid" id="tonerGrid">
+        <div class="toner-empty">Loading printer fleet toner levels...</div>
+    </div>
+</div>
+
+<!-- ================================ SAP CONFIGURATION ================================ -->
+<div class="panel" id="sapSection">
+    <h3>SAP Configuration <span id="sapLastChecked">Loading...</span></h3>
+
+    <div class="sap-summary">
+        <div class="mini"><div class="n idle" id="s_gui">--</div><div class="l">SAP GUI</div></div>
+        <div class="mini"><div class="n idle" id="s_landscape">--</div><div class="l">Landscape</div></div>
+        <div class="mini"><div class="n idle" id="s_configured">--</div><div class="l">Systems Configured</div></div>
+        <div class="mini"><div class="n idle" id="s_online">--</div><div class="l">Servers Online</div></div>
+    </div>
+
+    <div class="sap-toolbar">
+        <button class="sap-btn primary" id="sapConfigureBtn" onclick="sapConfigure(false)">Configure SAP</button>
+        <button class="sap-btn" onclick="sapTestConnectivity()">Test Connectivity</button>
+        <button class="sap-btn" onclick="sapLaunch()">Open SAP Logon</button>
+        <button class="sap-btn" onclick="loadSapStatus()">Refresh</button>
+    </div>
+
+    <div class="sap-systems" id="sapSystems">
+        <div style="font-size:12px;color:var(--sub);">Loading SAP configuration status...</div>
+    </div>
+
+    <div class="sap-progress" id="sapProgress">
+        <div class="sap-step" data-step="precheck"><span class="ic">1</span><span>Checking SAP GUI installation</span></div>
+        <div class="sap-step" data-step="deploy"><span class="ic">2</span><span>Deploying RSQ &amp; RSP configuration</span></div>
+        <div class="sap-step" data-step="connectivity"><span class="ic">3</span><span>Verifying application servers</span></div>
+        <div class="sap-step" data-step="launch"><span class="ic">4</span><span>Launching SAP Logon</span></div>
+    </div>
+
+    <div class="sap-result" id="sapResult"></div>
 </div>
 
 <!-- ================================ INSIGHT PANELS ================================ -->
@@ -390,6 +633,7 @@ tr:hover { background: rgba(0,103,184,.04); }
         <div class="health"><span>Playwright Agent</span><span class="dot-ok">● Running</span></div>
         <div class="health"><span>Logger</span><span class="dot-ok">● Writing</span></div>
         <div class="health"><span>FreshService API</span><span class="dot-ok">● Connected</span></div>
+        <div class="health"><span>SAP Config Agent</span><span id="healthSap" class="dot-warn">● Checking</span></div>
     </div>
 
     <div class="panel">
@@ -400,6 +644,8 @@ tr:hover { background: rgba(0,103,184,.04); }
     <div class="panel quick">
         <h3>Quick Actions</h3>
         <a href="/portal">🖨 Request Printer</a>
+        <a href="#tonerSection">🧴 Toner Monitor</a>
+        <a href="#sapSection">🧩 SAP Configuration</a>
         <a href="/">🏠 Home Portal</a>
         <a href="/api/logs" target="_blank">📊 Raw Logs API</a>
         <a href="https://dangote.freshservice.com/" target="_blank">🎫 Open FreshService</a>
@@ -409,7 +655,6 @@ tr:hover { background: rgba(0,103,184,.04); }
 </div>
 
 <script>
-
 const FS_DOMAIN = "dangote.freshservice.com";
 
 let allLogs = [];
@@ -420,7 +665,6 @@ let pageSize = 8;
 let sortKey = "timestamp";
 let sortDir = -1;
 let charts = {};
-
 
 /* ================================
    DATA LOADERS
@@ -455,7 +699,6 @@ function render() {
     renderFeed();
 }
 
-
 /* ================================
    KPIs
    ================================ */
@@ -481,7 +724,6 @@ function updateKPIs() {
     document.getElementById("k_success_rate").innerText = rate + "% success rate";
 }
 
-
 /* ================================
    TABLE
    ================================ */
@@ -505,7 +747,6 @@ function renderTable() {
     const paged = rows.slice(start, start+pageSize);
 
     tbody.innerHTML = paged.map(r => {
-
         const canRetry =
             ["TIMEOUT","LOGIN_FAILED","REGISTRATION_FAILED","UNKNOWN"].includes(r.status)
             && r.ticket_id;
@@ -559,12 +800,10 @@ function sortBy(key) {
 function prevPage() { if (page>1) { page--; renderTable(); }}
 function nextPage() { page++; renderTable(); }
 
-
 /* ================================
    RETRY
    ================================ */
 async function retryRequest(printerName, name, code, email, ticketId) {
-
     const printerId = printerNameToId[printerName];
 
     if (!printerId) {
@@ -589,10 +828,8 @@ async function retryRequest(printerName, name, code, email, ticketId) {
         });
 
         const data = await res.json();
-
         alert("Retry result: " + data.status + "\nTicket: SR-" + data.ticket_id);
         loadLogs();
-
     } catch (e) {
         console.error(e);
         alert("Retry failed. Check server connection.");
@@ -600,7 +837,6 @@ async function retryRequest(printerName, name, code, email, ticketId) {
 }
 
 async function retryAllFailed() {
-
     const failed = allLogs.filter(r =>
         ["TIMEOUT","LOGIN_FAILED","REGISTRATION_FAILED","UNKNOWN"].includes(r.status)
         && r.ticket_id
@@ -638,7 +874,6 @@ async function retryAllFailed() {
     loadLogs();
 }
 
-
 /* ================================
    EXPORT
    ================================ */
@@ -662,7 +897,6 @@ function download(filename, content, type) {
     a.download = filename;
     a.click();
 }
-
 
 /* ================================
    CHARTS
@@ -704,6 +938,7 @@ function renderCharts() {
     allLogs.filter(l => l.status !== "REGISTRATION_SUCCESS").forEach(l => {
         fmap[l.status] = (fmap[l.status]||0)+1;
     });
+
     makeChart("chartFailures","bar",{
         labels: Object.keys(fmap),
         datasets: [{ data: Object.values(fmap), backgroundColor:"#f57c00" }]
@@ -711,6 +946,7 @@ function renderCharts() {
 
     const pmap = {};
     allLogs.forEach(l => pmap[l.printer_name] = (pmap[l.printer_name]||0)+1);
+
     makeChart("chartPrinters","bar",{
         labels: Object.keys(pmap),
         datasets: [{ data: Object.values(pmap), backgroundColor:"#0087ff" }]
@@ -718,6 +954,7 @@ function renderCharts() {
 
     const dmap = {};
     allLogs.forEach(l => dmap[l.location] = (dmap[l.location]||0)+1);
+
     makeChart("chartDepts","bar",{
         labels: Object.keys(dmap),
         datasets: [{ data: Object.values(dmap), backgroundColor:"#8000ff" }]
@@ -727,6 +964,7 @@ function renderCharts() {
 function makeChart(id, type, data) {
     if (charts[id]) charts[id].destroy();
     const colors = themeAwareColors();
+
     charts[id] = new Chart(document.getElementById(id), {
         type, data,
         options: {
@@ -740,7 +978,6 @@ function makeChart(id, type, data) {
         }
     });
 }
-
 
 /* ================================
    FEED + PRINTER STATUS
@@ -764,8 +1001,8 @@ function renderFeed() {
 
 function renderPrinterStatus() {
     const target = document.getElementById("printerStatus");
-    target.innerHTML = printerStatuses.map(p => {
 
+    target.innerHTML = printerStatuses.map(p => {
         let badge = "Offline";
         let color = "var(--error)";
 
@@ -783,6 +1020,351 @@ function renderPrinterStatus() {
     }).join("");
 }
 
+/* ================================
+   TONER MONITOR
+   ================================ */
+let allToners = [];
+let tonerFilter = "All";
+
+function tonerColor(name) {
+    const n = name.toLowerCase();
+    if (n.includes("cyan")) return { cls: "c", label: "Cyan" };
+    if (n.includes("magenta")) return { cls: "m", label: "Magenta" };
+    if (n.includes("yellow")) return { cls: "y", label: "Yellow" };
+    if (n.includes("black")) return { cls: "k", label: "Black" };
+    return { cls: "k", label: name };
+}
+
+function renderTonerCard(p) {
+    const name = p.display_name || p.printer_name || p.key || p.ip;
+    const statusClass = "ts-" + p.overall_status;
+
+    let body = "";
+
+    if (!p.online) {
+        body = `<div class="toner-offline-msg">⚠ ${p.error || "Printer unreachable via SNMP"}</div>`;
+    } else if (!p.toners || p.toners.length === 0) {
+        body = `<div class="toner-offline-msg">No toner data reported.</div>`;
+    } else {
+        body = p.toners.map(t => {
+            const c = tonerColor(t.name);
+            const pct = (t.percentage === null || t.percentage === undefined) ? "—" : `${t.percentage}%`;
+            const width = (t.percentage === null || t.percentage === undefined) ? 0 : t.percentage;
+            return `
+                <div class="toner-bar-row">
+                    <div class="toner-bar-label">${c.label}</div>
+                    <div class="toner-bar-track"><div class="toner-bar-fill ${c.cls}" style="width:${width}%"></div></div>
+                    <div class="toner-bar-pct">${pct}</div>
+                </div>`;
+        }).join("");
+    }
+
+    return `
+        <div class="toner-card" data-tstatus="${p.overall_status}">
+            <div class="toner-card-top">
+                <div>
+                    <div class="toner-card-name">${name}</div>
+                    <div class="toner-card-loc">📍 ${p.location || "—"} · ${p.ip}</div>
+                </div>
+                <div class="toner-status-badge ${statusClass}">${p.overall_status}</div>
+            </div>
+            ${body}
+        </div>`;
+}
+
+function renderTonerSummary() {
+    const counts = { Healthy:0, Moderate:0, Low:0, Critical:0, Offline:0 };
+    allToners.forEach(p => { if (counts[p.overall_status] !== undefined) counts[p.overall_status]++; });
+
+    document.getElementById("t_healthy").innerText = counts.Healthy;
+    document.getElementById("t_moderate").innerText = counts.Moderate;
+    document.getElementById("t_low").innerText = counts.Low;
+    document.getElementById("t_critical").innerText = counts.Critical;
+    document.getElementById("t_offline").innerText = counts.Offline;
+
+    const kCrit = document.getElementById("k_toner_critical");
+    const kHealthy = document.getElementById("k_toner_healthy");
+    if (kCrit) kCrit.innerText = counts.Critical;
+    if (kHealthy) kHealthy.innerText = counts.Healthy;
+}
+
+function renderTonerGrid() {
+    let list = allToners;
+
+    if (tonerFilter !== "All") {
+        list = list.filter(p => p.overall_status === tonerFilter);
+    }
+
+    const order = { Critical:0, Low:1, Moderate:2, Unknown:3, Healthy:4, Offline:5 };
+    list = [...list].sort((a,b) => (order[a.overall_status]??9) - (order[b.overall_status]??9));
+
+    const grid = document.getElementById("tonerGrid");
+
+    if (list.length === 0) {
+        grid.innerHTML = `<div class="toner-empty">No printers match this filter.</div>`;
+        return;
+    }
+
+    grid.innerHTML = list.map(renderTonerCard).join("");
+}
+
+async function loadToners(manual) {
+    try {
+        const res = await fetch("/api/toner-status-all");
+        const json = await res.json();
+
+        if (json.success) {
+            allToners = json.data;
+            renderTonerSummary();
+            renderTonerGrid();
+            document.getElementById("tonerLastChecked").innerText =
+                "Updated " + new Date().toLocaleTimeString();
+        } else {
+            document.getElementById("tonerGrid").innerHTML =
+                `<div class="toner-empty">Error: ${json.error || json.detail || "Unknown error"}</div>`;
+        }
+    } catch (e) {
+        console.error("Toner load failed:", e);
+        if (manual) alert("Could not reach toner API.");
+        document.getElementById("tonerGrid").innerHTML =
+            `<div class="toner-empty">Could not reach toner API.</div>`;
+    }
+}
+
+document.addEventListener("click", (e) => {
+    if (e.target.classList.contains("toner-pill")) {
+        document.querySelectorAll(".toner-pill").forEach(p => p.classList.remove("active"));
+        e.target.classList.add("active");
+        tonerFilter = e.target.dataset.tf;
+        renderTonerGrid();
+    }
+});
+
+/* ================================
+   SAP CONFIGURATION
+   ================================ */
+let sapStatus = null;
+
+function sapSetTile(id, text, cls) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerText = text;
+    el.className = "n " + cls;
+}
+
+function sapShowResult(msg, ok) {
+    const box = document.getElementById("sapResult");
+    box.innerText = msg;
+    box.className = "sap-result show " + (ok ? "ok" : "err");
+}
+
+function sapSetStep(name, state) {
+    const el = document.querySelector('.sap-step[data-step="' + name + '"]');
+    if (!el) return;
+    el.className = "sap-step " + state;
+    const ic = el.querySelector(".ic");
+    if (state === "active") ic.innerHTML = '<span class="sap-spin">&#9696;</span>';
+    if (state === "done")   ic.innerHTML = "&#10003;";
+    if (state === "fail")   ic.innerHTML = "&#10007;";
+}
+
+function sapResetSteps() {
+    document.getElementById("sapProgress").classList.add("show");
+    ["precheck","deploy","connectivity","launch"].forEach((s, i) => {
+        const el = document.querySelector('.sap-step[data-step="' + s + '"]');
+        el.className = "sap-step";
+        el.querySelector(".ic").innerText = String(i + 1);
+    });
+    document.getElementById("sapResult").className = "sap-result";
+}
+
+function sapBusy(state) {
+    document.querySelectorAll("#sapSection .sap-btn").forEach(b => b.disabled = state);
+}
+
+function sapRenderSystems(status) {
+    const box = document.getElementById("sapSystems");
+    const entries = Object.entries(status.systems || {});
+
+    if (!entries.length) {
+        box.innerHTML = '<div style="font-size:12px;color:var(--sub);">No SAP systems defined.</div>';
+        return;
+    }
+
+    box.innerHTML = entries.map(([sid, sys]) => {
+        let cls = "ss-unknown", label = "Unknown", dot = "";
+
+        if (!sys.configured) {
+            cls = "ss-missing"; label = "Not configured"; dot = "off";
+        } else if (sys.reachable === true) {
+            cls = "ss-ready"; label = "Ready"; dot = "on";
+        } else if (sys.reachable === false) {
+            cls = "ss-offline"; label = "Server offline"; dot = "on";
+        } else {
+            cls = "ss-ready"; label = "Configured"; dot = "on";
+        }
+
+        return `
+            <div class="sap-sys">
+                <span class="dot ${dot}"></span>
+                <div class="info">
+                    <div class="sid">${sid}</div>
+                    <div class="desc">${sys.description}</div>
+                    <div class="meta">${sys.host} &middot; Instance ${sys.instance}</div>
+                </div>
+                <span class="state ${cls}">${label}</span>
+            </div>`;
+    }).join("");
+}
+
+function sapRenderTiles(status) {
+    sapSetTile("s_gui",
+        status.sap_gui_installed ? "Installed" : "Missing",
+        status.sap_gui_installed ? "ok" : "bad");
+
+    sapSetTile("s_landscape",
+        status.landscape_deployed ? "Deployed" : "None",
+        status.landscape_deployed ? "ok" : "bad");
+
+    const sys = Object.values(status.systems || {});
+    const configured = sys.filter(s => s.configured).length;
+    sapSetTile("s_configured",
+        configured + " / " + sys.length,
+        (configured === sys.length && sys.length) ? "ok" : "warn");
+
+    const checked = sys.filter(s => s.reachable !== undefined);
+    if (!checked.length) {
+        sapSetTile("s_online", "--", "idle");
+    } else {
+        const online = checked.filter(s => s.reachable).length;
+        sapSetTile("s_online", online + " / " + checked.length,
+            online === checked.length ? "ok" : "warn");
+    }
+
+    const health = document.getElementById("healthSap");
+    if (health) {
+        if (status.ready) {
+            health.className = "dot-ok";
+            health.innerText = "● Ready";
+        } else if (status.sap_gui_installed) {
+            health.className = "dot-warn";
+            health.innerText = "● Config required";
+        } else {
+            health.className = "dot-err";
+            health.innerText = "● SAP GUI missing";
+        }
+    }
+
+    document.getElementById("sapLastChecked").innerText =
+        "Updated " + new Date().toLocaleTimeString();
+}
+
+async function loadSapStatus(withConnectivity) {
+    try {
+        const url = "/sap/status" + (withConnectivity ? "?check_connectivity=true" : "");
+        const res = await fetch(url);
+        sapStatus = await res.json();
+
+        sapRenderTiles(sapStatus);
+        sapRenderSystems(sapStatus);
+
+        document.getElementById("sapConfigureBtn").innerText =
+            sapStatus.ready ? "Reconfigure SAP" : "Configure SAP";
+    } catch (e) {
+        console.error("SAP status failed:", e);
+        document.getElementById("sapSystems").innerHTML =
+            '<div style="font-size:12px;color:var(--error);">Could not reach SAP agent API.</div>';
+        document.getElementById("sapLastChecked").innerText = "Agent offline";
+
+        const health = document.getElementById("healthSap");
+        if (health) { health.className = "dot-err"; health.innerText = "● Offline"; }
+    }
+}
+
+async function sapConfigure(force) {
+    sapResetSteps();
+    sapBusy(true);
+    sapSetStep("precheck", "active");
+
+    try {
+        const res = await fetch("/sap/configure?launch=true&force=" + (force ? "true" : "false"),
+                                { method: "POST" });
+        const report = await res.json();
+        const steps = report.steps || {};
+
+        sapSetStep("precheck",
+            (steps.precheck && steps.precheck.sap_gui.installed) ? "done" : "fail");
+
+        if (steps.deploy) {
+            if (steps.deploy.requires_close) {
+                sapSetStep("deploy", "fail");
+                sapBusy(false);
+                if (confirm("SAP Logon is currently open and must be closed to apply the configuration.\n\nClose SAP Logon and continue?")) {
+                    return sapConfigure(true);
+                }
+                sapShowResult(steps.deploy.message, false);
+                return;
+            }
+            sapSetStep("deploy", steps.deploy.success ? "done" : "fail");
+        }
+
+        if (steps.connectivity) {
+            const anyOnline = Object.keys(steps.connectivity)
+                .filter(k => k !== "checked_at")
+                .some(k => steps.connectivity[k].reachable);
+            sapSetStep("connectivity", anyOnline ? "done" : "fail");
+        }
+
+        if (steps.launch) {
+            sapSetStep("launch", steps.launch.success ? "done" : "fail");
+        }
+
+        sapShowResult(report.message, report.success);
+        await loadSapStatus();
+
+    } catch (e) {
+        console.error(e);
+        sapShowResult("Configuration failed: " + e.message, false);
+    } finally {
+        sapBusy(false);
+    }
+}
+
+async function sapTestConnectivity() {
+    sapBusy(true);
+    document.getElementById("sapLastChecked").innerText = "Testing servers...";
+
+    try {
+        await loadSapStatus(true);
+        const sys = Object.values((sapStatus && sapStatus.systems) || {});
+        const online = sys.filter(s => s.reachable).length;
+
+        sapShowResult(
+            online === sys.length
+                ? "All SAP application servers are reachable."
+                : online + " of " + sys.length + " SAP servers reachable. If you are outside the refinery network, connect to the corporate LAN or VPN.",
+            online === sys.length
+        );
+    } catch (e) {
+        sapShowResult("Connectivity test failed: " + e.message, false);
+    } finally {
+        sapBusy(false);
+    }
+}
+
+async function sapLaunch() {
+    sapBusy(true);
+    try {
+        const res = await fetch("/sap/launch", { method: "POST" });
+        const data = await res.json();
+        sapShowResult(data.message, data.success);
+    } catch (e) {
+        sapShowResult("Could not launch SAP Logon: " + e.message, false);
+    } finally {
+        sapBusy(false);
+        loadSapStatus();
+    }
+}
 
 /* ================================
    THEME
@@ -805,7 +1387,6 @@ function toggleTheme() {
     else if (matchMedia("(prefers-color-scheme: dark)").matches) applyTheme("dark");
 })();
 
-
 /* ================================
    BOOT
    ================================ */
@@ -813,15 +1394,20 @@ async function boot() {
     await Promise.all([
         loadLogs(),
         loadPrinters(),
-        loadPrinterMap()
+        loadPrinterMap(),
+        loadToners(),
+        loadSapStatus()
     ]);
+
     render();
+
     setInterval(loadLogs, 15000);
     setInterval(loadPrinters, 60000);
+    setInterval(loadToners, 5 * 60000);
+    setInterval(loadSapStatus, 5 * 60000);
 }
 
 boot();
-
 </script>
 
 </body>

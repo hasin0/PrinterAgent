@@ -467,9 +467,7 @@ def portal():
 def dashboard():
     return FileResponse("static/dashboard.html")
 
-@app.get("/sap-config")
-def sap_config_page():
-    return FileResponse("static/sap.html")
+
 # ================================
 # INSTALLER SCRIPT GENERATOR (Python-based)
 # ================================
@@ -612,19 +610,6 @@ def get_installer_script(ip, name, user, code):
     lines.append("pause")
 
     return "\r\n".join(lines)
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # ================================

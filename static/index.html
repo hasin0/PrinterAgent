@@ -1,13 +1,9 @@
-
-
-
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dangote Refinery — IT Self-Service Portal</title>
+<title>Dangote Refinery â€” IT Self-Service Portal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
@@ -23,7 +19,6 @@
     --shadow: 0 10px 30px rgba(15,23,42,0.08);
     --radius: 20px;
 }
-
 [data-theme="dark"] {
     --bg-1: #0b1220;
     --bg-2: #131c30;
@@ -74,7 +69,7 @@ body::after {
     right: -100px;
 }
 [data-theme="dark"] body::before { background: #1c4c94; opacity: 0.55; }
-[data-theme="dark"] body::after { background: #b98b17; opacity: 0.35; }
+[data-theme="dark"] body::after  { background: #b98b17; opacity: 0.35; }
 
 /* TOPBAR */
 .topbar {
@@ -105,10 +100,7 @@ body::after {
 .brand strong { font-size: 14px; }
 .brand span { font-size: 12px; color: var(--sub); display: block; }
 
-.topbar-actions {
-    display: flex; align-items: center; gap: 12px;
-}
-
+.topbar-actions { display: flex; align-items: center; gap: 12px; }
 .icon-btn {
     width: 38px; height: 38px;
     display: flex; align-items: center; justify-content: center;
@@ -116,10 +108,9 @@ body::after {
     background: var(--card);
     border: 1px solid var(--card-border);
     cursor: pointer;
-    text-decoration: none; /* Added to prevent underline on anchor tags */
+    text-decoration: none;
 }
 .icon-btn:hover { transform: translateY(-1px); }
-
 .avatar {
     width: 38px; height: 38px;
     border-radius: 50%;
@@ -146,7 +137,6 @@ body::after {
     font-size: 15px;
     margin-top: 6px;
 }
-
 .search-shell {
     margin: 30px auto 0;
     max-width: 640px;
@@ -185,7 +175,6 @@ body::after {
     margin: 40px auto 60px;
     padding: 0 24px;
 }
-
 .section-title {
     display: flex; justify-content: space-between; align-items: center;
     margin-bottom: 18px;
@@ -198,7 +187,6 @@ body::after {
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 20px;
 }
-
 .agent {
     background: var(--card);
     border: 1px solid var(--card-border);
@@ -210,11 +198,7 @@ body::after {
     cursor: pointer;
     position: relative;
 }
-
-.agent:hover {
-    transform: translateY(-4px);
-}
-
+.agent:hover { transform: translateY(-4px); }
 .agent .icon {
     width: 46px; height: 46px;
     border-radius: 14px;
@@ -222,7 +206,6 @@ body::after {
     font-size: 22px;
     margin-bottom: 16px;
 }
-
 .agent h3 { font-size: 15px; font-weight: 700; }
 .agent p { font-size: 13px; color: var(--sub); margin-top: 4px; }
 
@@ -268,29 +251,24 @@ body::after {
             <span>IT Self-Service Portal</span>
         </div>
     </div>
-
     <div class="topbar-actions">
-        <div class="icon-btn" onclick="toggleTheme()" title="Toggle theme">🌓</div>
-        
-        <a href="/dashboard" class="icon-btn" title="Dashboard">📊</a>
-        
+        <div class="icon-btn" onclick="toggleTheme()" title="Toggle theme">ðŸŒ“</div>
+        <a href="/dashboard" class="icon-btn" title="Dashboard">ðŸ“Š</a>
         <div class="avatar">H</div>
     </div>
 </div>
 
 <div class="hero">
-    <!-- <h1>Good morning, Hassan 👋</h1> -->
+    <!-- <h1>Good morning, Hassan ðŸ‘‹</h1> -->
     <p>Choose an agent below to get started.</p>
-
     <div class="search-shell">
-        <span>🔍</span>
+        <span>ðŸ”</span>
         <input placeholder="Ask AI or search actions, apps, printers...">
         <button>Ask AI</button>
     </div>
 </div>
 
 <div class="container">
-
     <div class="section-title">
         <h2>Available Agents</h2>
         <span>Powered by Hermes AI</span>
@@ -299,44 +277,51 @@ body::after {
     <div class="agents">
 
         <div class="agent" onclick="location.href='/portal'">
-            <div class="icon icon-blue">🖨️</div>
+            <div class="icon icon-blue">ðŸ–¨ï¸</div>
             <h3>Printer Agent</h3>
             <p>Register, install, and configure Sharp printers automatically.</p>
             <span class="badge">Available</span>
         </div>
 
+        <div class="agent" onclick="location.href='/sap-config'">
+            <div class="icon icon-teal">ðŸ§©</div>
+            <h3>SAP Config Agent</h3>
+            <p>Auto-configure SAP Logon with RSQ and RSP in one click.</p>
+            <span class="badge">Available</span>
+        </div>
+
         <div class="agent" onclick="alert('Coming soon')">
-            <div class="icon icon-purple">📦</div>
+            <div class="icon icon-purple">ðŸ“¦</div>
             <h3>Software Agent</h3>
             <p>Install approved apps like Office, Teams, and SAP GUI.</p>
             <span class="badge soon">Coming soon</span>
         </div>
 
         <div class="agent" onclick="alert('Coming soon')">
-            <div class="icon icon-green">💻</div>
+            <div class="icon icon-green">ðŸ’»</div>
             <h3>PC Setup Agent</h3>
             <p>Automate new laptop provisioning and configuration.</p>
             <span class="badge soon">Coming soon</span>
         </div>
 
         <div class="agent" onclick="alert('Coming soon')">
-            <div class="icon icon-amber">🔐</div>
+            <div class="icon icon-amber">ðŸ”</div>
             <h3>Access Agent</h3>
             <p>Request AD, VPN, SAP, and shared drive access.</p>
             <span class="badge soon">Coming soon</span>
         </div>
 
         <div class="agent" onclick="alert('Coming soon')">
-            <div class="icon icon-red">🚀</div>
+            <div class="icon icon-red">ðŸš€</div>
             <h3>Onboarding Agent</h3>
             <p>Provision account, email, laptop, and printer on day 1.</p>
             <span class="badge soon">Coming soon</span>
         </div>
 
         <div class="agent" onclick="alert('AI Assistant coming')">
-            <div class="icon icon-teal">🤖</div>
+            <div class="icon icon-teal">ðŸ¤–</div>
             <h3>Hermes AI Assistant</h3>
-            <p>Talk to IT in plain English — request anything.</p>
+            <p>Talk to IT in plain English â€” request anything.</p>
             <span class="badge soon">Preview</span>
         </div>
 
@@ -344,8 +329,8 @@ body::after {
 </div>
 
 <div class="footer">
-    IT Self-Service Portal · Powered by Hermes v0.1 · Printer Agent v1.0<br>
-    Built by Hassan Abdulmalik — Dangote Petroleum Refinery
+    IT Self-Service Portal Â· Powered by Hermes v0.1 Â· Printer Agent v1.0 Â· SAP Config Agent v1.0<br>
+    Built by Hassan Abdulmalik â€” Dangote Petroleum Refinery
 </div>
 
 <script>
@@ -375,5 +360,3 @@ function toggleTheme() {
 
 </body>
 </html>
-
-``` 

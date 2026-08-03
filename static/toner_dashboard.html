@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PrinterAgent | Toner &amp; Consumables Monitor</title>
+<style>
+  :root{
+    --bg-1:#0b0f19;
+    --bg-2:#111827;
+    --card:#151b2c;
+    --card-border:rgba(255,255,255,0.08);
+    --glass:rgba(255,255,255,0.04);
+    --text-1:#eef1f7;
+    --text-2:#9aa4bb;
+    --text-3:#6b7690;
+    --accent:#3b82f6;
+    --accent-2:#8b5cf6;
+    --healthy:#22c55e;
+    --moderate:#eab308;
+    --low:#f97316;
+    --critical:#ef4444;
+    --unknown:#6b7280;
+    --offline:#4b5563;
+    --radius:16px;
+    --shadow: 0 8px 30px rgba(0,0,0,0.35);
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    font-family:'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(59,130,246,0.10), transparent 40%),
+      radial-gradient(circle at 85% 20%, rgba(139,92,246,0.10), transparent 40%),
+      linear-gradient(180deg, var(--bg-1), var(--bg-2));
+    color:var(--text-1);
+    min-height:100vh;
+    padding-bottom:60px;
+  }
+
+  header{
+    position:sticky;
+    top:0;
+    z-index:20;
+    backdrop-filter: blur(14px);
+    background:rgba(11,15,25,0.75);
+    border-bottom:1px solid var(--card-border);
+    padding:18px 32px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:14px;
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+
+  .brand-icon{
+    width:40px;height:40px;border-radius:12px;
+    background:linear-gradient(135deg, var(--accent), var(--accent-2));
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px;
+    box-shadow:0 4px 16px rgba(59,130,246,0.4);
+  }
+
+  .brand h1{
+    font-size:17px;
+    margin:0;
+    font-weight:600;
+    letter-spacing:0.2px;
+  }
+
+  .brand span{
+    display:block;
+    font-size:12px;
+    color:var(--text-2);
+    font-weight:400;
+    margin-top:2px;
+  }
+
+  .header-actions{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+
+  .last-updated{
+    font-size:12px;
+    color:var(--text-2);
+    text-align:right;
+  }
+
+  .btn{
+    border:1px solid var(--card-border);
+    background:var(--glass);
+    color:var(--text-1);
+    padding:9px 16px;
+    border-radius:10px;
+    font-size:13px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    transition:all .2s ease;
+  }
+  .btn:hover{ background:rgba(59,130,246,0.15); border-color:rgba(59,130,246,0.4); }
+  .btn.primary{
+    background:linear-gradient(135deg, var(--accent), var(--accent-2));
+    border:none;
+  }
+  .btn.primary:hover{ filter:brightness(1.08); }
+
+  .spin{
+    animation: spin 1s linear infinite;
+    display:inline-block;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  main{ padding:28px 32px; max-width:1500px; margin:0 auto; }
+
+  .summary-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(170px,1fr));
+    gap:16px;
+    margin-bottom:28px;
+  }
+
+  .summary-card{
+    background:var(--card);
+    border:1px solid var(--card-border);
+    border-radius:var(--radius);
+    padding:18px 20px;
+    box-shadow:var(--shadow);
+    position:relative;
+    overflow:hidden;
+  }
+
+  .summary-card::before{
+    content:"";
+    position:absolute; inset:0;
+    background:linear-gradient(135deg, rgba(255,255,255,0.03), transparent);
+  }
+
+  .summary-card .num{
+    font-size:28px;
+    font-weight:700;
+    margin-bottom:4px;
+    position:relative;
+  }
+  .summary-card .label{
+    font-size:12.5px;
+    color:var(--text-2);
+    position:relative;
+  }
+
+  .summary-card.total .num{ color:var(--text-1); }
+  .summary-card.healthy .num{ color:var(--healthy); }
+  .summary-card.moderate .num{ color:var(--moderate); }
+  .summary-card.low .num{ color:var(--low); }
+  .summary-card.critical .num{ color:var(--critical); }
+  .summary-card.offline .num{ color:var(--offline); }
+
+  .toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:14px;
+    margin-bottom:20px;
+  }
+
+  .search-box{
+    flex:1;
+    min-width:220px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--card);
+    border:1px solid var(--card-border);
+    border-radius:12px;
+    padding:10px 16px;
+  }
+  .search-box input{
+    flex:1;
+    background:transparent;
+    border:none;
+    outline:none;
+    color:var(--text-1);
+    font-size:13.5px;
+  }
+  .search-box input::placeholder{ color:var(--text-3); }
+
+  .filter-pills{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+
+  .pill{
+    padding:8px 14px;
+    border-radius:999px;
+    font-size:12.5px;
+    border:1px solid var(--card-border);
+    background:var(--glass);
+    color:var(--text-2);
+    cursor:pointer;
+    user-select:none;
+    transition:all .15s ease;
+    white-space:nowrap;
+  }
+  .pill.active{
+    color:#fff;
+    border-color:transparent;
+  }
+  .pill[data-filter="All"].active{ background:var(--accent); }
+  .pill[data-filter="Critical"].active{ background:var(--critical); }
+  .pill[data-filter="Low"].active{ background:var(--low); }
+  .pill[data-filter="Moderate"].active{ background:var(--moderate); color:#1a1a1a; }
+  .pill[data-filter="Healthy"].active{ background:var(--healthy); color:#0a1a0a; }
+  .pill[data-filter="Offline"].active{ background:var(--offline); }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));
+    gap:18px;
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--card-border);
+    border-radius:var(--radius);
+    padding:20px;
+    box-shadow:var(--shadow);
+    transition: transform .18s ease, border-color .18s ease;
+    position:relative;
+  }
+  .card:hover{ transform:translateY(-3px); border-color:rgba(255,255,255,0.16); }
+
+  .card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    margin-bottom:14px;
+  }
+
+  .card-title{
+    font-size:15px;
+    font-weight:600;
+    margin:0 0 4px 0;
+    line-height:1.3;
+  }
+  .card-sub{
+    font-size:12px;
+    color:var(--text-2);
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+
+  .status-badge{
+    font-size:11px;
+    font-weight:600;
+    padding:5px 11px;
+    border-radius:999px;
+    white-space:nowrap;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .dot{ width:7px; height:7px; border-radius:50%; }
+
+  .status-Healthy{ background:rgba(34,197,94,0.15); color:var(--healthy); }
+  .status-Healthy .dot{ background:var(--healthy); }
+  .status-Moderate{ background:rgba(234,179,8,0.15); color:var(--moderate); }
+  .status-Moderate .dot{ background:var(--moderate); }
+  .status-Low{ background:rgba(249,115,22,0.15); color:var(--low); }
+  .status-Low .dot{ background:var(--low); }
+  .status-Critical{ background:rgba(239,68,68,0.15); color:var(--critical); }
+  .status-Critical .dot{ background:var(--critical); }
+  .status-Offline{ background:rgba(107,114,128,0.18); color:var(--text-2); }
+  .status-Offline .dot{ background:var(--offline); }
+  .status-Unknown{ background:rgba(107,114,128,0.15); color:var(--text-2); }
+  .status-Unknown .dot{ background:var(--unknown); }
+
+  .toner-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:9px;
+    font-size:12.5px;
+  }
+  .toner-label{
+    width:64px;
+    flex-shrink:0;
+    color:var(--text-2);
+  }
+  .bar-track{
+    flex:1;
+    height:8px;
+    border-radius:6px;
+    background:rgba(255,255,255,0.06);
+    overflow:hidden;
+  }
+  .bar-fill{
+    height:100%;
+    border-radius:6px;
+    transition:width .4s ease;
+  }
+  .bar-fill.c{ background:linear-gradient(90deg,#22d3ee,#06b6d4); }
+  .bar-fill.m{ background:linear-gradient(90deg,#f472b6,#ec4899); }
+  .bar-fill.y{ background:linear-gradient(90deg,#fde047,#eab308); }
+  .bar-fill.k{ background:linear-gradient(90deg,#9ca3af,#4b5563); }
+
+  .toner-pct{
+    width:38px;
+    text-align:right;
+    font-variant-numeric: tabular-nums;
+    color:var(--text-1);
+    font-weight:600;
+  }
+
+  .card-footer{
+    margin-top:14px;
+    padding-top:12px;
+    border-top:1px solid var(--card-border);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:11px;
+    color:var(--text-3);
+  }
+
+  .offline-msg{
+    font-size:12.5px;
+    color:var(--text-2);
+    background:rgba(239,68,68,0.06);
+    border:1px dashed rgba(239,68,68,0.3);
+    padding:12px;
+    border-radius:10px;
+    margin-top:6px;
+  }
+
+  .empty-state{
+    text-align:center;
+    padding:60px 20px;
+    color:var(--text-2);
+  }
+
+  .loading-overlay{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    padding:80px 0;
+    color:var(--text-2);
+    font-size:14px;
+  }
+
+  ::-webkit-scrollbar{ width:8px; height:8px; }
+  ::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.1); border-radius:8px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-icon">🖨️</div>
+    <div>
+      <h1>Toner &amp; Consumables Monitor</h1>
+      <span>PrinterAgent · Dangote Refinery Printer Fleet</span>
+    </div>
+  </div>
+  <div class="header-actions">
+    <div class="last-updated" id="lastUpdated">Loading...</div>
+    <button class="btn" id="refreshBtn"><span id="refreshIcon">⟳</span> Refresh</button>
+    <button class="btn primary" id="autoBtn">Auto-refresh: Off</button>
+  </div>
+</header>
+
+<main>
+
+  <div class="summary-grid" id="summaryGrid">
+    <div class="summary-card total">
+      <div class="num" id="sumTotal">0</div>
+      <div class="label">Total Printers</div>
+    </div>
+    <div class="summary-card healthy">
+      <div class="num" id="sumHealthy">0</div>
+      <div class="label">Healthy</div>
+    </div>
+    <div class="summary-card moderate">
+      <div class="num" id="sumModerate">0</div>
+      <div class="label">Moderate</div>
+    </div>
+    <div class="summary-card low">
+      <div class="num" id="sumLow">0</div>
+      <div class="label">Low Toner</div>
+    </div>
+    <div class="summary-card critical">
+      <div class="num" id="sumCritical">0</div>
+      <div class="label">Critical</div>
+    </div>
+    <div class="summary-card offline">
+      <div class="num" id="sumOffline">0</div>
+      <div class="label">Offline / No SNMP</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <span>🔍</span>
+      <input type="text" id="searchInput" placeholder="Search by name, location, or IP address..." />
+    </div>
+    <div class="filter-pills" id="filterPills">
+      <div class="pill active" data-filter="All">All</div>
+      <div class="pill" data-filter="Critical">Critical</div>
+      <div class="pill" data-filter="Low">Low</div>
+      <div class="pill" data-filter="Moderate">Moderate</div>
+      <div class="pill" data-filter="Healthy">Healthy</div>
+      <div class="pill" data-filter="Offline">Offline</div>
+    </div>
+  </div>
+
+  <div id="gridContainer">
+    <div class="loading-overlay">
+      <span class="spin">⟳</span> Checking printer fleet via SNMP, please wait...
+    </div>
+  </div>
+
+</main>
+
+<script>
+const API_URL = "/api/toner-status-all";
+
+let allPrinters = [];
+let currentFilter = "All";
+let currentSearch = "";
+let autoRefreshInterval = null;
+let autoRefreshOn = false;
+
+const statusOrder = { "Critical": 0, "Low": 1, "Moderate": 2, "Unknown": 3, "Healthy": 4, "Offline": 5 };
+
+function tonerIcon(name){
+  const n = name.toLowerCase();
+  if(n.includes("cyan")) return {cls:"c", label:"Cyan"};
+  if(n.includes("magenta")) return {cls:"m", label:"Magenta"};
+  if(n.includes("yellow")) return {cls:"y", label:"Yellow"};
+  if(n.includes("black")) return {cls:"k", label:"Black"};
+  return {cls:"k", label:name};
+}
+
+function renderCard(p){
+  const statusClass = `status-${p.overall_status}`;
+  const displayName = p.display_name || p.printer_name || p.key || p.ip;
+
+  let bodyHtml = "";
+
+  if(!p.online){
+    bodyHtml = `<div class="offline-msg">⚠️ ${p.error || "Printer unreachable via SNMP."}</div>`;
+  } else if(p.toners.length === 0){
+    bodyHtml = `<div class="offline-msg">No toner supply data reported by this device.</div>`;
+  } else {
+    bodyHtml = p.toners.map(t => {
+      const icon = tonerIcon(t.name);
+      const pct = (t.percentage === null || t.percentage === undefined) ? "—" : `${t.percentage}%`;
+      const width = (t.percentage === null || t.percentage === undefined) ? 0 : t.percentage;
+      return `
+        <div class="toner-row">
+          <div class="toner-label">${icon.label}</div>
+          <div class="bar-track"><div class="bar-fill ${icon.cls}" style="width:${width}%"></div></div>
+          <div class="toner-pct">${pct}</div>
+        </div>`;
+    }).join("");
+  }
+
+  return `
+    <div class="card" data-status="${p.overall_status}">
+      <div class="card-top">
+        <div>
+          <p class="card-title">${displayName}</p>
+          <div class="card-sub">
+            <span>📍 ${p.location || "—"}</span>
+            <span>🌐 ${p.ip}</span>
+          </div>
+        </div>
+        <div class="status-badge ${statusClass}"><span class="dot"></span>${p.overall_status}</div>
+      </div>
+      <div class="card-body">${bodyHtml}</div>
+      <div class="card-footer">
+        <span>${p.printer_name ? "SNMP: " + p.printer_name : "No SNMP name"}</span>
+        <span>Checked ${p.last_checked ? p.last_checked.split(" ")[1] : "—"}</span>
+      </div>
+    </div>`;
+}
+
+function applyFiltersAndRender(){
+  let filtered = allPrinters;
+
+  if(currentFilter !== "All"){
+    filtered = filtered.filter(p => p.overall_status === currentFilter);
+  }
+
+  if(currentSearch.trim() !== ""){
+    const q = currentSearch.toLowerCase();
+    filtered = filtered.filter(p =>
+      (p.display_name || "").toLowerCase().includes(q) ||
+      (p.location || "").toLowerCase().includes(q) ||
+      (p.ip || "").toLowerCase().includes(q) ||
+      (p.printer_name || "").toLowerCase().includes(q)
+    );
+  }
+
+  filtered.sort((a,b) => (statusOrder[a.overall_status] ?? 9) - (statusOrder[b.overall_status] ?? 9));
+
+  const container = document.getElementById("gridContainer");
+
+  if(filtered.length === 0){
+    container.innerHTML = `<div class="empty-state">No printers match your current filter/search.</div>`;
+    return;
+  }
+
+  container.innerHTML = `<div class="grid">${filtered.map(renderCard).join("")}</div>`;
+}
+
+function updateSummary(){
+  const counts = { Healthy:0, Moderate:0, Low:0, Critical:0, Offline:0, Unknown:0 };
+  allPrinters.forEach(p => {
+    if(counts[p.overall_status] !== undefined) counts[p.overall_status]++;
+  });
+
+  document.getElementById("sumTotal").textContent = allPrinters.length;
+  document.getElementById("sumHealthy").textContent = counts.Healthy;
+  document.getElementById("sumModerate").textContent = counts.Moderate;
+  document.getElementById("sumLow").textContent = counts.Low;
+  document.getElementById("sumCritical").textContent = counts.Critical;
+  document.getElementById("sumOffline").textContent = counts.Offline;
+}
+
+async function loadToners(showLoading = true){
+  const refreshIcon = document.getElementById("refreshIcon");
+  refreshIcon.classList.add("spin");
+
+  if(showLoading && allPrinters.length === 0){
+    document.getElementById("gridContainer").innerHTML = `
+      <div class="loading-overlay"><span class="spin">⟳</span> Checking printer fleet via SNMP, please wait...</div>`;
+  }
+
+  try{
+    const res = await fetch(API_URL);
+    const json = await res.json();
+
+    if(json.success){
+      allPrinters = json.data;
+      updateSummary();
+      applyFiltersAndRender();
+      document.getElementById("lastUpdated").textContent =
+        "Last updated: " + new Date().toLocaleTimeString();
+    } else {
+      document.getElementById("gridContainer").innerHTML =
+        `<div class="empty-state">Error loading data: ${json.error || "Unknown error"}</div>`;
+    }
+  } catch(err){
+    document.getElementById("gridContainer").innerHTML =
+      `<div class="empty-state">Could not reach PrinterAgent API.<br><small>${err}</small></div>`;
+  } finally {
+    refreshIcon.classList.remove("spin");
+  }
+}
+
+document.getElementById("refreshBtn").addEventListener("click", () => loadToners(false));
+
+document.getElementById("autoBtn").addEventListener("click", (e) => {
+  autoRefreshOn = !autoRefreshOn;
+  if(autoRefreshOn){
+    e.target.textContent = "Auto-refresh: On (5m)";
+    autoRefreshInterval = setInterval(() => loadToners(false), 5 * 60 * 1000);
+  } else {
+    e.target.textContent = "Auto-refresh: Off";
+    clearInterval(autoRefreshInterval);
+  }
+});
+
+document.getElementById("searchInput").addEventListener("input", (e) => {
+  currentSearch = e.target.value;
+  applyFiltersAndRender();
+});
+
+document.querySelectorAll(".pill").forEach(pill => {
+  pill.addEventListener("click", () => {
+    document.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
+    pill.classList.add("active");
+    currentFilter = pill.dataset.filter;
+    applyFiltersAndRender();
+  });
+});
+
+loadToners();
+</script>
+
+</body>
+</html>

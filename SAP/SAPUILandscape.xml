@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Landscape>
+
+<Service type="SAPGUI" uuid="..." name="QUALITY RSQ 420"
+         systemid="RSQ" mode="1" server="172.31.102.60:3200"/>
+
+<ApplicationServer>
+172.31.102.60
+</ApplicationServer>
+
+<SystemID>
+RSQ
+</SystemID>
+
+<InstanceNumber>
+00
+</InstanceNumber>
+
+</Service>
+
+<Service
+type="SAPGUI"
+name="Refinery and Fertilizers - PRD">
+
+<ApplicationServer>
+ikjdcprdpha02.dangote-group.com
+</ApplicationServer>
+
+<SystemID>
+RSP
+</SystemID>
+
+<InstanceNumber>
+00
+</InstanceNumber>
+
+</Service>
+
+</Landscape>
