@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-08-03 17:39:24",
+  "saved_at": "2026-08-03 22:30:53",
   "count": 15,
   "data": [
     {
@@ -12,7 +12,7 @@
       "overall_status": "Offline",
       "toners": [],
       "maintenance": [],
-      "last_checked": "2026-08-03 17:37:36",
+      "last_checked": "2026-08-03 22:30:06",
       "error": "No SNMP response (printer offline or SNMP disabled)"
     },
     {
@@ -25,7 +25,7 @@
       "overall_status": "Offline",
       "toners": [],
       "maintenance": [],
-      "last_checked": "2026-08-03 17:37:46",
+      "last_checked": "2026-08-03 22:30:10",
       "error": "No SNMP response (printer offline or SNMP disabled)"
     },
     {
@@ -38,7 +38,7 @@
       "overall_status": "Offline",
       "toners": [],
       "maintenance": [],
-      "last_checked": "2026-08-03 17:37:49",
+      "last_checked": "2026-08-03 22:30:13",
       "error": "No SNMP response (printer offline or SNMP disabled)"
     },
     {
@@ -51,7 +51,7 @@
       "overall_status": "Offline",
       "toners": [],
       "maintenance": [],
-      "last_checked": "2026-08-03 17:37:52",
+      "last_checked": "2026-08-03 22:30:16",
       "error": "No SNMP response (printer offline or SNMP disabled)"
     },
     {
@@ -64,7 +64,7 @@
       "overall_status": "Offline",
       "toners": [],
       "maintenance": [],
-      "last_checked": "2026-08-03 17:37:56",
+      "last_checked": "2026-08-03 22:30:20",
       "error": "No SNMP response (printer offline or SNMP disabled)"
     },
     {
@@ -77,7 +77,7 @@
       "overall_status": "Offline",
       "toners": [],
       "maintenance": [],
-      "last_checked": "2026-08-03 17:37:59",
+      "last_checked": "2026-08-03 22:30:23",
       "error": "No SNMP response (printer offline or SNMP disabled)"
     },
     {
@@ -85,175 +85,13 @@
       "ip": "172.16.16.47",
       "display_name": "GED OFFICE",
       "location": "GED OFFICE",
-      "printer_name": "GVP",
-      "online": true,
-      "overall_status": "Low",
-      "toners": [
-        {
-          "name": "Cyan Toner",
-          "index": "1",
-          "max_capacity": "100",
-          "current_level": "13",
-          "percentage": 13.0,
-          "status": "Low"
-        },
-        {
-          "name": "Magenta Toner",
-          "index": "2",
-          "max_capacity": "100",
-          "current_level": "87",
-          "percentage": 87.0,
-          "status": "Healthy"
-        },
-        {
-          "name": "Yellow Toner",
-          "index": "3",
-          "max_capacity": "100",
-          "current_level": "15",
-          "percentage": 15.0,
-          "status": "Low"
-        },
-        {
-          "name": "Black Toner",
-          "index": "4",
-          "max_capacity": "100",
-          "current_level": "20",
-          "percentage": 20.0,
-          "status": "Low"
-        },
-        {
-          "name": "Waste Toner",
-          "index": "6",
-          "max_capacity": null,
-          "current_level": "100",
-          "percentage": null,
-          "status": "Unknown"
-        }
-      ],
-      "maintenance": [
-        {
-          "name": "Cyan Photoconductive Drum (DC)",
-          "index": "7",
-          "max_capacity": null,
-          "current_level": "80",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Magenta Photoconductive Drum (DM)",
-          "index": "8",
-          "max_capacity": null,
-          "current_level": "80",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Yellow Photoconductive Drum (DY)",
-          "index": "9",
-          "max_capacity": null,
-          "current_level": "80",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Black Photoconductive Drum (DK)",
-          "index": "10",
-          "max_capacity": null,
-          "current_level": "78",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Maintenance (TA)",
-          "index": "16",
-          "max_capacity": null,
-          "current_level": "92",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Maintenance (CA)",
-          "index": "17",
-          "max_capacity": null,
-          "current_level": "93",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Fusing Belt/Roller (FK1)",
-          "index": "18",
-          "max_capacity": null,
-          "current_level": "92",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Pressure Roller (FK2)",
-          "index": "19",
-          "max_capacity": null,
-          "current_level": "92",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Transfer Belt (TK1)",
-          "index": "22",
-          "max_capacity": null,
-          "current_level": "92",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Secondary Transfer Belt/Roller (TK2)",
-          "index": "23",
-          "max_capacity": null,
-          "current_level": "92",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Cyan Main Charger (MCC)",
-          "index": "25",
-          "max_capacity": null,
-          "current_level": "80",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Magenta Main Charger (MCM)",
-          "index": "26",
-          "max_capacity": null,
-          "current_level": "80",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Yellow Main Charger (MCY)",
-          "index": "27",
-          "max_capacity": null,
-          "current_level": "80",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Black Main Charger (MCK)",
-          "index": "28",
-          "max_capacity": null,
-          "current_level": "78",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Transfer Blade (TK5)",
-          "index": "31",
-          "max_capacity": null,
-          "current_level": "-3",
-          "percentage": null,
-          "status": "Unknown"
-        }
-      ],
-      "last_checked": "2026-08-03 17:39:08",
-      "error": null
+      "printer_name": null,
+      "online": false,
+      "overall_status": "Offline",
+      "toners": [],
+      "maintenance": [],
+      "last_checked": "2026-08-03 22:30:26",
+      "error": "No SNMP response (printer offline or SNMP disabled)"
     },
     {
       "key": "DR_NIKE_OFFICE_PRINTER",
@@ -265,7 +103,7 @@
       "overall_status": "Offline",
       "toners": [],
       "maintenance": [],
-      "last_checked": "2026-08-03 17:32:35",
+      "last_checked": "2026-08-03 22:30:30",
       "error": "No SNMP response (printer offline or SNMP disabled)"
     },
     {
@@ -278,7 +116,7 @@
       "overall_status": "Offline",
       "toners": [],
       "maintenance": [],
-      "last_checked": "2026-08-03 17:32:38",
+      "last_checked": "2026-08-03 22:30:33",
       "error": "No SNMP response (printer offline or SNMP disabled)"
     },
     {
@@ -291,7 +129,7 @@
       "overall_status": "Offline",
       "toners": [],
       "maintenance": [],
-      "last_checked": "2026-08-03 17:32:42",
+      "last_checked": "2026-08-03 22:30:36",
       "error": "No SNMP response (printer offline or SNMP disabled)"
     },
     {
@@ -304,7 +142,7 @@
       "overall_status": "Offline",
       "toners": [],
       "maintenance": [],
-      "last_checked": "2026-08-03 17:32:45",
+      "last_checked": "2026-08-03 22:30:40",
       "error": "No SNMP response (printer offline or SNMP disabled)"
     },
     {
@@ -312,549 +150,39 @@
       "ip": "172.20.231.74",
       "display_name": "PROCUREMENT PRINTER",
       "location": "NEW ADMIN BLOCK PROCUREMENT",
-      "printer_name": "PROCUREMENT",
-      "online": true,
-      "overall_status": "Critical",
-      "toners": [
-        {
-          "name": "Cyan Toner",
-          "index": "1",
-          "max_capacity": "100",
-          "current_level": "7",
-          "percentage": 7.0,
-          "status": "Critical"
-        },
-        {
-          "name": "Magenta Toner",
-          "index": "2",
-          "max_capacity": "100",
-          "current_level": "9",
-          "percentage": 9.0,
-          "status": "Critical"
-        },
-        {
-          "name": "Yellow Toner",
-          "index": "3",
-          "max_capacity": "100",
-          "current_level": "18",
-          "percentage": 18.0,
-          "status": "Low"
-        },
-        {
-          "name": "Black Toner",
-          "index": "4",
-          "max_capacity": "100",
-          "current_level": "93",
-          "percentage": 93.0,
-          "status": "Healthy"
-        },
-        {
-          "name": "Waste Toner",
-          "index": "6",
-          "max_capacity": "-2",
-          "current_level": "100",
-          "percentage": null,
-          "status": "Unknown"
-        }
-      ],
-      "maintenance": [
-        {
-          "name": "Cyan Photoconductive Drum (DC)",
-          "index": "7",
-          "max_capacity": null,
-          "current_level": "87",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Magenta Photoconductive Drum (DM)",
-          "index": "8",
-          "max_capacity": null,
-          "current_level": "87",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Yellow Photoconductive Drum (DY)",
-          "index": "9",
-          "max_capacity": null,
-          "current_level": "87",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Black Photoconductive Drum (DK)",
-          "index": "10",
-          "max_capacity": null,
-          "current_level": "81",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Maintenance (TA)",
-          "index": "16",
-          "max_capacity": null,
-          "current_level": "93",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Maintenance (CA)",
-          "index": "17",
-          "max_capacity": null,
-          "current_level": "96",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Fusing Belt/Roller (FK1)",
-          "index": "18",
-          "max_capacity": null,
-          "current_level": "93",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Pressure Roller (FK2)",
-          "index": "19",
-          "max_capacity": null,
-          "current_level": "93",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Transfer Belt (TK1)",
-          "index": "22",
-          "max_capacity": null,
-          "current_level": "93",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Secondary Transfer Belt/Roller (TK2)",
-          "index": "23",
-          "max_capacity": null,
-          "current_level": "93",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Cyan Main Charger (MCC)",
-          "index": "25",
-          "max_capacity": null,
-          "current_level": "87",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Magenta Main Charger (MCM)",
-          "index": "26",
-          "max_capacity": null,
-          "current_level": "87",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Yellow Main Charger (MCY)",
-          "index": "27",
-          "max_capacity": null,
-          "current_level": "87",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Black Main Charger (MCK)",
-          "index": "28",
-          "max_capacity": null,
-          "current_level": "81",
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Transfer Blade (TK5)",
-          "index": "31",
-          "max_capacity": null,
-          "current_level": "-3",
-          "percentage": null,
-          "status": "Unknown"
-        }
-      ],
-      "last_checked": "2026-08-03 17:38:05",
-      "error": null
+      "printer_name": null,
+      "online": false,
+      "overall_status": "Offline",
+      "toners": [],
+      "maintenance": [],
+      "last_checked": "2026-08-03 22:30:43",
+      "error": "No SNMP response (printer offline or SNMP disabled)"
     },
     {
       "key": "FINANCE_PRINTER",
       "ip": "172.20.229.92",
       "display_name": "FINANCE PRINTER",
       "location": "NEW ADMIN BLOCK FINANCE OFFICE",
-      "printer_name": "FINANCE PRINTER",
-      "online": true,
-      "overall_status": "Critical",
-      "toners": [
-        {
-          "name": "Cyan Toner",
-          "index": "1",
-          "max_capacity": "100",
-          "current_level": "56",
-          "percentage": 56.0,
-          "status": "Healthy"
-        },
-        {
-          "name": "Magenta Toner",
-          "index": "2",
-          "max_capacity": "100",
-          "current_level": "60",
-          "percentage": 60.0,
-          "status": "Healthy"
-        },
-        {
-          "name": "Yellow Toner",
-          "index": "3",
-          "max_capacity": "100",
-          "current_level": "58",
-          "percentage": 58.0,
-          "status": "Healthy"
-        },
-        {
-          "name": "Black Toner",
-          "index": "4",
-          "max_capacity": "100",
-          "current_level": "9",
-          "percentage": 9.0,
-          "status": "Critical"
-        },
-        {
-          "name": "Waste Toner",
-          "index": "6",
-          "max_capacity": "-2",
-          "current_level": "100",
-          "percentage": null,
-          "status": "Unknown"
-        }
-      ],
-      "maintenance": [
-        {
-          "name": "Cyan Photoconductive Drum (DC)",
-          "index": "7",
-          "max_capacity": "100",
-          "current_level": "97",
-          "percentage": 97.0,
-          "status": "Healthy"
-        },
-        {
-          "name": "Magenta Photoconductive Drum (DM)",
-          "index": "8",
-          "max_capacity": "100",
-          "current_level": "97",
-          "percentage": 97.0,
-          "status": "Healthy"
-        },
-        {
-          "name": "Yellow Photoconductive Drum (DY)",
-          "index": "9",
-          "max_capacity": "100",
-          "current_level": "97",
-          "percentage": 97.0,
-          "status": "Healthy"
-        },
-        {
-          "name": "Black Photoconductive Drum (DK)",
-          "index": "10",
-          "max_capacity": "100",
-          "current_level": "95",
-          "percentage": 95.0,
-          "status": "Healthy"
-        },
-        {
-          "name": "Maintenance (TA)",
-          "index": "16",
-          "max_capacity": "100",
-          "current_level": "99",
-          "percentage": 99.0,
-          "status": "Healthy"
-        },
-        {
-          "name": "Maintenance (CA)",
-          "index": "17",
-          "max_capacity": "100",
-          "current_level": "99",
-          "percentage": 99.0,
-          "status": "Healthy"
-        },
-        {
-          "name": "Fusing Belt/Roller (FK1)",
-          "index": "18",
-          "max_capacity": "100",
-          "current_level": "99",
-          "percentage": 99.0,
-          "status": "Healthy"
-        },
-        {
-          "name": "Pressure Roller (FK2)",
-          "index": "19",
-          "max_capacity": "100",
-          "current_level": "99",
-          "percentage": 99.0,
-          "status": "Healthy"
-        },
-        {
-          "name": "Transfer Belt (TK1)",
-          "index": "22",
-          "max_capacity": "100",
-          "current_level": "99",
-          "percentage": 99.0,
-          "status": "Healthy"
-        },
-        {
-          "name": "Secondary Transfer Belt/Roller (TK2)",
-          "index": "23",
-          "max_capacity": "100",
-          "current_level": "99",
-          "percentage": 99.0,
-          "status": "Healthy"
-        },
-        {
-          "name": "Cyan Main Charger (MCC)",
-          "index": "25",
-          "max_capacity": "100",
-          "current_level": "97",
-          "percentage": 97.0,
-          "status": "Healthy"
-        },
-        {
-          "name": "Magenta Main Charger (MCM)",
-          "index": "26",
-          "max_capacity": "100",
-          "current_level": "97",
-          "percentage": 97.0,
-          "status": "Healthy"
-        },
-        {
-          "name": "Yellow Main Charger (MCY)",
-          "index": "27",
-          "max_capacity": "100",
-          "current_level": "97",
-          "percentage": 97.0,
-          "status": "Healthy"
-        },
-        {
-          "name": "Black Main Charger (MCK)",
-          "index": "28",
-          "max_capacity": "100",
-          "current_level": "95",
-          "percentage": 95.0,
-          "status": "Healthy"
-        },
-        {
-          "name": "Transfer Blade (TK5)",
-          "index": "31",
-          "max_capacity": "100",
-          "current_level": "-3",
-          "percentage": null,
-          "status": "Unknown"
-        }
-      ],
-      "last_checked": "2026-08-03 17:39:24",
-      "error": null
+      "printer_name": null,
+      "online": false,
+      "overall_status": "Offline",
+      "toners": [],
+      "maintenance": [],
+      "last_checked": "2026-08-03 22:30:46",
+      "error": "No SNMP response (printer offline or SNMP disabled)"
     },
     {
       "key": "ICD_PRINTER",
       "ip": "172.16.18.137",
       "display_name": "ICD PRINTER",
       "location": "E-BLOCK LOCK ICD",
-      "printer_name": "",
-      "online": true,
-      "overall_status": "Healthy",
-      "toners": [
-        {
-          "name": "Cyan Toner",
-          "index": "1",
-          "max_capacity": "100",
-          "current_level": "70",
-          "percentage": 70.0,
-          "status": "Healthy"
-        },
-        {
-          "name": "Magenta Toner",
-          "index": "2",
-          "max_capacity": "100",
-          "current_level": null,
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Yellow Toner",
-          "index": "3",
-          "max_capacity": "100",
-          "current_level": null,
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Black Toner",
-          "index": "4",
-          "max_capacity": "100",
-          "current_level": null,
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Waste Toner",
-          "index": "6",
-          "max_capacity": "-2",
-          "current_level": null,
-          "percentage": null,
-          "status": "Unknown"
-        }
-      ],
-      "maintenance": [
-        {
-          "name": "Cyan Photoconductive Drum (DC)",
-          "index": "7",
-          "max_capacity": "100",
-          "current_level": null,
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Magenta Photoconductive Drum (DM)",
-          "index": "8",
-          "max_capacity": "100",
-          "current_level": null,
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Yellow Photoconductive Drum (DY)",
-          "index": "9",
-          "max_capacity": "100",
-          "current_level": null,
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Black Photoconductive Drum (DK)",
-          "index": "10",
-          "max_capacity": "100",
-          "current_level": null,
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Cyan Developer (VC)",
-          "index": "11",
-          "max_capacity": "100",
-          "current_level": null,
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Magenta Developer (VM)",
-          "index": "12",
-          "max_capacity": "100",
-          "current_level": null,
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Yellow Developer (VY)",
-          "index": "13",
-          "max_capacity": "100",
-          "current_level": null,
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Black Developer (VK)",
-          "index": "14",
-          "max_capacity": "100",
-          "current_level": null,
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Maintenance (TA)",
-          "index": "16",
-          "max_capacity": "100",
-          "current_level": null,
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Maintenance (CA)",
-          "index": "17",
-          "max_capacity": "100",
-          "current_level": null,
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Fusing Belt/Roller (FK1)",
-          "index": "18",
-          "max_capacity": "100",
-          "current_level": null,
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Pressure Roller (FK2)",
-          "index": "19",
-          "max_capacity": "100",
-          "current_level": null,
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Transfer Belt (TK1)",
-          "index": "22",
-          "max_capacity": "100",
-          "current_level": null,
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Secondary Transfer Belt/Roller (TK2)",
-          "index": "23",
-          "max_capacity": "100",
-          "current_level": null,
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Cyan Main Charger (MCC)",
-          "index": "25",
-          "max_capacity": "100",
-          "current_level": null,
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Magenta Main Charger (MCM)",
-          "index": "26",
-          "max_capacity": "100",
-          "current_level": null,
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Yellow Main Charger (MCY)",
-          "index": "27",
-          "max_capacity": "100",
-          "current_level": null,
-          "percentage": null,
-          "status": "Unknown"
-        },
-        {
-          "name": "Black Main Charger (MCK)",
-          "index": "28",
-          "max_capacity": "100",
-          "current_level": null,
-          "percentage": null,
-          "status": "Unknown"
-        }
-      ],
-      "last_checked": "2026-08-03 17:37:19",
-      "error": null
+      "printer_name": null,
+      "online": false,
+      "overall_status": "Offline",
+      "toners": [],
+      "maintenance": [],
+      "last_checked": "2026-08-03 22:30:49",
+      "error": "No SNMP response (printer offline or SNMP disabled)"
     },
     {
       "key": "21C_PRINTER",
@@ -866,7 +194,7 @@
       "overall_status": "Offline",
       "toners": [],
       "maintenance": [],
-      "last_checked": "2026-08-03 17:37:45",
+      "last_checked": "2026-08-03 22:30:53",
       "error": "No SNMP response (printer offline or SNMP disabled)"
     }
   ]

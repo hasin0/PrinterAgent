@@ -85,5 +85,17 @@ PRINTERS = {
         "display_name": "2 MCR PRINTER",
         "ip": "172.20.101.197",
         "location": "MCR OFFICE"
+    },
+
+    "21 G_PRINTER": {
+        "display_name": "HR project OFFICE SHARP PRINTER",
+        "ip": "172.16.16.83",
+        "location": "21G HR project OFFICE"
     }
+
+
+
+
+
+    
 }
