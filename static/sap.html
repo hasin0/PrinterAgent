@@ -183,8 +183,7 @@ body::after  { background:#ffcc29; width:320px; height:320px; bottom:-120px; rig
 <div class="hero">
     <div class="glyph">🧩</div>
     <h1>SAP Configuration</h1>
-    <p>Set up SAP Logon on this computer automatically — no manual entry required.</p>
-</div>
+<p>Download and run the SAP configuration tool to set up SAP Logon on your computer.</p></div>
 
 <div class="container">
 
@@ -205,8 +204,7 @@ body::after  { background:#ffcc29; width:320px; height:320px; bottom:-120px; rig
         </div>
 
         <div class="actions">
-            <button class="btn btn-primary" id="btnConfigure" onclick="configureSAP(false)">Configure SAP</button>
-            <button class="btn btn-ghost" onclick="testConnectivity()">Test Connection</button>
+<button class="btn btn-primary" id="btnConfigure" onclick="downloadSAPScript()">Download SAP Configuration</button>            <button class="btn btn-ghost" onclick="testConnectivity()">Test Connection</button>
             <button class="btn btn-ghost" onclick="launchSAP()">Open SAP Logon</button>
         </div>
 
@@ -446,6 +444,11 @@ async function launchSAP() {
 }
 
 loadStatus();
+
+
+function downloadSAPScript() {
+    window.location.href = "/sap/download-script";
+}
 </script>
 
 </body>
