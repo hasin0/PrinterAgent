@@ -42,5 +42,18 @@
       "RSQ",
       "RSP"
     ]
+  },
+  {
+    "timestamp": "2026-08-11 14:21:12",
+    "user": "Hassan.Abdulmalik",
+    "computer": "DPRPFTZ-LT-0110",
+    "success": true,
+    "message": "SAP configured successfully",
+    "systems": [
+      "RSQ",
+      "RSP"
+    ],
+    "details": {},
+    "source": "client_powershell_script"
   }
 ]
