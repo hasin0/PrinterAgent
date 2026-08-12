@@ -2,10 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dangote Refinery â€” IT Self-Service Portal</title>
+<title>Dangote Refinery &mdash; IT Self-Service Portal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
 <style>
 :root {
     --bg-1: #f5f7fb;
@@ -30,21 +29,18 @@
     --accent-2: #78c9ff;
     --shadow: 0 10px 40px rgba(0,0,0,0.4);
 }
-
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: 'Inter', sans-serif;
 }
-
 body {
     background: linear-gradient(135deg, var(--bg-1), var(--bg-2));
     color: var(--text);
     min-height: 100vh;
     transition: background 0.4s ease, color 0.4s ease;
 }
-
 body::before,
 body::after {
     content: "";
@@ -70,7 +66,6 @@ body::after {
 }
 [data-theme="dark"] body::before { background: #1c4c94; opacity: 0.55; }
 [data-theme="dark"] body::after  { background: #b98b17; opacity: 0.35; }
-
 /* TOPBAR */
 .topbar {
     position: relative;
@@ -87,7 +82,6 @@ body::after {
     background: rgba(15,23,42,0.4);
     border-bottom: 1px solid rgba(255,255,255,0.05);
 }
-
 .brand { display: flex; align-items: center; gap: 12px; }
 .brand .logo {
     width: 34px; height: 34px;
@@ -99,7 +93,6 @@ body::after {
 }
 .brand strong { font-size: 14px; }
 .brand span { font-size: 12px; color: var(--sub); display: block; }
-
 .topbar-actions { display: flex; align-items: center; gap: 12px; }
 .icon-btn {
     width: 38px; height: 38px;
@@ -119,7 +112,6 @@ body::after {
     display: flex; align-items: center; justify-content: center;
     font-weight: 700;
 }
-
 /* HERO */
 .hero {
     position: relative;
@@ -167,7 +159,6 @@ body::after {
     font-weight: 600;
     cursor: pointer;
 }
-
 .container {
     position: relative;
     z-index: 3;
@@ -181,7 +172,6 @@ body::after {
 }
 .section-title h2 { font-size: 18px; font-weight: 700; }
 .section-title span { font-size: 13px; color: var(--sub); }
-
 .agents {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -208,7 +198,6 @@ body::after {
 }
 .agent h3 { font-size: 15px; font-weight: 700; }
 .agent p { font-size: 13px; color: var(--sub); margin-top: 4px; }
-
 .badge {
     font-size: 11px;
     padding: 4px 10px;
@@ -224,14 +213,12 @@ body::after {
     color: var(--sub);
 }
 [data-theme="dark"] .badge.soon { background: rgba(255,255,255,0.06); }
-
 .icon-blue   { background: rgba(0,103,184,0.15); color: var(--accent); }
 .icon-purple { background: rgba(128,0,255,0.15); color: #8000ff; }
 .icon-green  { background: rgba(46,125,50,0.15); color: #2e7d32; }
 .icon-amber  { background: rgba(255,193,7,0.15); color: #b26a00; }
 .icon-red    { background: rgba(198,40,40,0.15); color: #c62828; }
 .icon-teal   { background: rgba(0,150,136,0.15); color: #009688; }
-
 .footer {
     text-align: center;
     padding: 30px 20px;
@@ -240,9 +227,7 @@ body::after {
 }
 </style>
 </head>
-
 <body>
-
 <div class="topbar">
     <div class="brand">
         <div class="logo">D</div>
@@ -252,87 +237,74 @@ body::after {
         </div>
     </div>
     <div class="topbar-actions">
-        <div class="icon-btn" onclick="toggleTheme()" title="Toggle theme">ðŸŒ“</div>
-        <a href="/dashboard" class="icon-btn" title="Dashboard">ðŸ“Š</a>
+        <div class="icon-btn" onclick="toggleTheme()" title="Toggle theme">&#127765;</div>
+        <a href="/dashboard" class="icon-btn" title="Dashboard">&#128202;</a>
         <div class="avatar">H</div>
     </div>
 </div>
-
 <div class="hero">
-    <!-- <h1>Good morning, Hassan ðŸ‘‹</h1> -->
+    <!-- <h1>Good morning, Hassan &#128075;</h1> -->
     <p>Choose an agent below to get started.</p>
     <div class="search-shell">
-        <span>ðŸ”</span>
+        <span>&#128269;</span>
         <input placeholder="Ask AI or search actions, apps, printers...">
         <button>Ask AI</button>
     </div>
 </div>
-
 <div class="container">
     <div class="section-title">
         <h2>Available Agents</h2>
         <span>Powered by Hermes AI</span>
     </div>
-
     <div class="agents">
-
         <div class="agent" onclick="location.href='/portal'">
-            <div class="icon icon-blue">ðŸ–¨ï¸</div>
+            <div class="icon icon-blue">&#128424;&#65039;</div>
             <h3>Printer Agent</h3>
             <p>Register, install, and configure Sharp printers automatically.</p>
             <span class="badge">Available</span>
         </div>
-
         <div class="agent" onclick="location.href='/sap-config'">
-            <div class="icon icon-teal">ðŸ§©</div>
+            <div class="icon icon-teal">&#129513;</div>
             <h3>SAP Config Agent</h3>
             <p>Auto-configure SAP Logon with RSQ and RSP in one click.</p>
             <span class="badge">Available</span>
         </div>
-
         <div class="agent" onclick="alert('Coming soon')">
-            <div class="icon icon-purple">ðŸ“¦</div>
+            <div class="icon icon-purple">&#128230;</div>
             <h3>Software Agent</h3>
             <p>Install approved apps like Office, Teams, and SAP GUI.</p>
             <span class="badge soon">Coming soon</span>
         </div>
-
         <div class="agent" onclick="alert('Coming soon')">
-            <div class="icon icon-green">ðŸ’»</div>
+            <div class="icon icon-green">&#128187;</div>
             <h3>PC Setup Agent</h3>
             <p>Automate new laptop provisioning and configuration.</p>
             <span class="badge soon">Coming soon</span>
         </div>
-
         <div class="agent" onclick="alert('Coming soon')">
-            <div class="icon icon-amber">ðŸ”</div>
+            <div class="icon icon-amber">&#128273;</div>
             <h3>Access Agent</h3>
             <p>Request AD, VPN, SAP, and shared drive access.</p>
             <span class="badge soon">Coming soon</span>
         </div>
-
         <div class="agent" onclick="alert('Coming soon')">
-            <div class="icon icon-red">ðŸš€</div>
+            <div class="icon icon-red">&#128640;</div>
             <h3>Onboarding Agent</h3>
             <p>Provision account, email, laptop, and printer on day 1.</p>
             <span class="badge soon">Coming soon</span>
         </div>
-
         <div class="agent" onclick="alert('AI Assistant coming')">
-            <div class="icon icon-teal">ðŸ¤–</div>
+            <div class="icon icon-teal">&#129302;</div>
             <h3>Hermes AI Assistant</h3>
-            <p>Talk to IT in plain English â€” request anything.</p>
+            <p>Talk to IT in plain English &mdash; request anything.</p>
             <span class="badge soon">Preview</span>
         </div>
-
     </div>
 </div>
-
 <div class="footer">
-    IT Self-Service Portal Â· Powered by Hermes v0.1 Â· Printer Agent v1.0 Â· SAP Config Agent v1.0<br>
-    Built by Hassan Abdulmalik â€” Dangote Petroleum Refinery
+    IT Self-Service Portal &middot; Powered by Hermes v0.1 &middot; Printer Agent v1.0 &middot; SAP Config Agent v1.0<br>
+    Built by Hassan Abdulmalik &mdash; Dangote Petroleum Refinery
 </div>
-
 <script>
 function applyTheme(theme) {
     if (theme === "dark") {
@@ -342,12 +314,10 @@ function applyTheme(theme) {
     }
     localStorage.setItem("theme", theme);
 }
-
 function toggleTheme() {
     const current = document.documentElement.getAttribute("data-theme");
     applyTheme(current === "dark" ? "light" : "dark");
 }
-
 (function() {
     const saved = localStorage.getItem("theme");
     if (saved) {
@@ -357,6 +327,5 @@ function toggleTheme() {
     }
 })();
 </script>
-
 </body>
 </html>
