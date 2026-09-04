@@ -296,6 +296,13 @@ echo Configured systems: RSQ, RSP
 REM --- 7. Report success to server ---
 curl -s -X POST "__REPORT_URL__" -H "Content-Type: application/json" -d "{\"success\":true,\"user\":\"%USERNAME%\",\"computer\":\"%COMPUTERNAME%\",\"systems\":[\"RSQ\",\"RSP\"],\"message\":\"SAP configured successfully\"}" >nul 2>&1
 
+
+
+REM --- Standardize SAP GUI theme (SAP Signature) ---
+reg add "HKCU\Software\SAP\General\Appearance" /v SelectedTheme /t REG_DWORD /d 1 /f >nul 2>&1
+echo SAP GUI theme set to SAP Signature.
+
+
 REM --- 8. Launch SAP Logon ---
 start "" "%SAPLOGON%"
 

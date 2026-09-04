@@ -172,6 +172,60 @@ button.primary {
 }
 
 
+/* LOCAL PRINTERS SECTION */
+.local-section {
+    max-width: 500px;
+    margin: 0 auto 60px;
+}
+.local-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding: 0 4px;
+}
+.local-head h2 { font-size: 16px; font-weight: 700; }
+.local-head span { font-size: 12px; color: var(--sub); }
+
+.local-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 18px;
+}
+.local-icon {
+    width: 46px; height: 46px;
+    flex-shrink: 0;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    background: rgba(255,193,7,0.15);
+    color: #b26a00;
+}
+[data-theme="dark"] .local-icon { color: #fbbf24; }
+.local-info { flex: 1; }
+.local-info strong { font-size: 14px; display: block; }
+.local-info span { font-size: 12.5px; color: var(--sub); margin-top: 2px; display: block; }
+
+.local-install {
+    flex-shrink: 0;
+    padding: 11px 16px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+    color: white;
+    background: linear-gradient(135deg, var(--brand), var(--brand-2));
+    white-space: nowrap;
+    cursor: pointer;
+}
+.local-install:hover { filter: brightness(1.05); }
+
+
 /* WORKFLOW MODAL */
 .workflow-overlay {
     position: fixed;
@@ -331,7 +385,7 @@ button.primary {
     <div class="topbar-actions">
         <a href="/">Home</a>
         <a href="/dashboard">Dashboard</a>
-        <button onclick="toggleTheme()">🌓</button>
+        <button onclick="toggleTheme()">&#127765;</button>
     </div>
 </div>
 
@@ -350,7 +404,7 @@ button.primary {
     <label>Full Name</label>
     <input id="name" placeholder="e.g. Hassan Abdulmalik">
 
-    <label>User Code (5–8 digits)</label>
+    <label>User Code (5&ndash;8 digits)</label>
     <input id="code" placeholder="e.g. 34451">
 
     <label>Email</label>
@@ -359,6 +413,28 @@ button.primary {
     <button class="primary" onclick="submitRequest()">
         Request Printer Access
     </button>
+</div>
+
+
+<!-- ================= LOCAL PRINTERS ================= -->
+<!-- Local printers need no registration - just download & run the installer. -->
+<div class="local-section">
+    <div class="local-head">
+        <h2>Local Printers</h2>
+        <span>Direct install &middot; no registration needed</span>
+    </div>
+
+    <div class="local-card">
+        <div class="local-icon">&#129534;</div>
+        <div class="local-info">
+            <strong>EPSON LQ-350</strong>
+            <span>Dot-matrix printer for SAP forms &amp; invoices. Installs on a local port automatically &mdash; no admin needed.</span>
+        </div>
+        <!-- If you added the /api/epson-installer endpoint, keep this href.
+             If you instead dropped the .bat into static\tools\, change to:
+             href="/tools/install_epson_lq350.bat" -->
+        <a class="local-install" href="/api/epson-installer">Download Installer</a>
+    </div>
 </div>
 
 
@@ -380,12 +456,12 @@ button.primary {
         <div class="progress-percent" id="progressPercent">0%</div>
 
         <ul class="workflow-list">
-            <li id="step-1"><div class="step-icon">🌐</div><div class="step-body"><strong>Opening Sharp printer</strong><span id="s1-msg">Waiting...</span></div><div class="step-state" id="s1">•</div></li>
-            <li id="step-2"><div class="step-icon">🔐</div><div class="step-body"><strong>Administrator login</strong><span id="s2-msg">Waiting...</span></div><div class="step-state" id="s2">•</div></li>
-            <li id="step-3"><div class="step-icon">📂</div><div class="step-body"><strong>Navigating User Settings</strong><span id="s3-msg">Waiting...</span></div><div class="step-state" id="s3">•</div></li>
-            <li id="step-4"><div class="step-icon">📝</div><div class="step-body"><strong>Filling registration form</strong><span id="s4-msg">Waiting...</span></div><div class="step-state" id="s4">•</div></li>
-            <li id="step-5"><div class="step-icon">📤</div><div class="step-body"><strong>Submitting</strong><span id="s5-msg">Waiting...</span></div><div class="step-state" id="s5">•</div></li>
-            <li id="step-6"><div class="step-icon">✅</div><div class="step-body"><strong>Verifying result</strong><span id="s6-msg">Waiting...</span></div><div class="step-state" id="s6">•</div></li>
+            <li id="step-1"><div class="step-icon">&#127760;</div><div class="step-body"><strong>Opening Sharp printer</strong><span id="s1-msg">Waiting...</span></div><div class="step-state" id="s1">&bull;</div></li>
+            <li id="step-2"><div class="step-icon">&#128272;</div><div class="step-body"><strong>Administrator login</strong><span id="s2-msg">Waiting...</span></div><div class="step-state" id="s2">&bull;</div></li>
+            <li id="step-3"><div class="step-icon">&#128193;</div><div class="step-body"><strong>Navigating User Settings</strong><span id="s3-msg">Waiting...</span></div><div class="step-state" id="s3">&bull;</div></li>
+            <li id="step-4"><div class="step-icon">&#128221;</div><div class="step-body"><strong>Filling registration form</strong><span id="s4-msg">Waiting...</span></div><div class="step-state" id="s4">&bull;</div></li>
+            <li id="step-5"><div class="step-icon">&#128228;</div><div class="step-body"><strong>Submitting</strong><span id="s5-msg">Waiting...</span></div><div class="step-state" id="s5">&bull;</div></li>
+            <li id="step-6"><div class="step-icon">&#9989;</div><div class="step-body"><strong>Verifying result</strong><span id="s6-msg">Waiting...</span></div><div class="step-state" id="s6">&bull;</div></li>
         </ul>
 
         <div class="workflow-footer" id="workflowFooter" style="display:none;">
@@ -449,7 +525,7 @@ function resetSteps() {
 
         const s = document.getElementById("s" + i);
         s.classList.remove("done","fail");
-        s.innerHTML = "•";
+        s.innerHTML = "&bull;";
         document.getElementById("s" + i + "-msg").innerText = "Waiting...";
     }
     document.getElementById("workflowFooter").style.display = "none";
@@ -464,14 +540,14 @@ function markStep(step, status) {
 
     if (status === "start") {
         li.classList.add("active");
-        s.innerHTML = "⏳";
+        s.innerHTML = "&#8987;";
     } else if (status === "done") {
         li.classList.add("done");
         s.classList.add("done");
-        s.innerHTML = "✅";
+        s.innerHTML = "&#9989;";
     } else if (status === "fail") {
         s.classList.add("fail");
-        s.innerHTML = "✖";
+        s.innerHTML = "&#10006;";
     }
 }
 
@@ -508,17 +584,6 @@ function showFinal(data) {
     // Show footer (which contains the Close button)
     footer.style.display = "flex";
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 function closeWorkflow() {

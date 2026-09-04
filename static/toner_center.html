@@ -1,0 +1,325 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Toner Center — PrinterAgent</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f7fb; --panel:#ffffff; --border:#eef2f7; --text:#0f172a; --sub:#64748b;
+  --brand:#0067b8; --brand-2:#0087ff; --success:#2e7d32; --warning:#f57c00;
+  --error:#c62828; --low:#f97316; --shadow:0 6px 20px rgba(15,23,42,.05); --radius:16px;
+}
+[data-theme="dark"]{
+  --bg:#0b1220; --panel:#131c30; --border:#1e293b; --text:#f8fafc; --sub:#94a3b8;
+  --brand:#4fb3ff; --brand-2:#78c9ff; --success:#4ade80; --warning:#fbbf24;
+  --error:#f87171; --low:#fb923c; --shadow:0 6px 20px rgba(0,0,0,.4);
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
+body{background:var(--bg);color:var(--text);font-size:14px;transition:background .4s,color .4s;}
+
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:18px 32px;
+  background:var(--panel);border-bottom:1px solid var(--border);}
+.brand{display:flex;align-items:center;gap:12px;}
+.brand .logo{width:34px;height:34px;border-radius:10px;
+  background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;
+  display:flex;align-items:center;justify-content:center;font-weight:800;}
+.brand strong{font-size:14px;} .brand span{font-size:12px;color:var(--sub);display:block;}
+.topbar-actions{display:flex;gap:12px;align-items:center;}
+.topbar-actions a{font-size:13px;text-decoration:none;color:var(--brand);font-weight:600;
+  padding:8px 12px;border-radius:10px;background:rgba(0,103,184,.08);}
+.icon-btn{width:34px;height:34px;border-radius:10px;background:var(--panel);
+  border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;
+  justify-content:center;font-size:15px;}
+
+.wrap{padding:24px 32px;display:grid;grid-template-columns:1fr 1.3fr;gap:20px;
+  max-width:1300px;margin:0 auto;}
+@media(max-width:960px){ .wrap{grid-template-columns:1fr;} }
+
+.panel{background:var(--panel);border-radius:var(--radius);padding:20px;
+  border:1px solid var(--border);box-shadow:var(--shadow);}
+.panel h3{font-size:15px;font-weight:700;margin-bottom:4px;display:flex;
+  justify-content:space-between;align-items:center;}
+.panel .hint{font-size:12px;color:var(--sub);margin-bottom:14px;}
+
+/* Attention list */
+.att-item{display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;
+  border:1px solid var(--border);background:var(--bg);margin-bottom:10px;}
+.att-rank{width:26px;height:26px;flex-shrink:0;border-radius:50%;font-size:12px;
+  font-weight:800;display:flex;align-items:center;justify-content:center;color:#fff;}
+.att-item .info{flex:1;min-width:0;}
+.att-item .nm{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;}
+.att-item .lo{font-size:11.5px;color:var(--sub);margin-top:2px;}
+.att-pct{font-size:20px;font-weight:800;width:64px;text-align:right;}
+.att-bar{height:6px;border-radius:6px;background:var(--border);margin-top:6px;overflow:hidden;}
+.att-bar>div{height:100%;border-radius:6px;}
+.badge{font-size:10px;font-weight:800;padding:3px 8px;border-radius:999px;white-space:nowrap;}
+.b-crit{background:rgba(198,40,40,.15);color:var(--error);}
+.b-low{background:rgba(249,115,22,.15);color:var(--low);}
+.b-mod{background:rgba(245,124,0,.15);color:var(--warning);}
+.b-ok{background:rgba(46,125,50,.15);color:var(--success);}
+.b-off{background:rgba(100,116,139,.15);color:var(--sub);}
+.att-check{border:none;background:rgba(0,103,184,.1);color:var(--brand);font-weight:700;
+  font-size:11px;padding:6px 10px;border-radius:8px;cursor:pointer;}
+
+.offline-strip{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);
+  font-size:12px;color:var(--sub);}
+.offline-chip{display:inline-block;font-size:11px;background:var(--bg);
+  border:1px solid var(--border);border-radius:999px;padding:4px 10px;margin:3px 4px 0 0;}
+
+/* Check panel */
+.check-row{display:flex;gap:8px;margin-bottom:6px;}
+.check-row input{flex:1;padding:11px 13px;border-radius:10px;border:1px solid var(--border);
+  background:var(--bg);color:var(--text);font-size:14px;}
+.check-row input:focus{outline:none;border-color:var(--brand);}
+.check-row button{padding:11px 18px;border:none;border-radius:10px;font-weight:700;
+  font-size:13px;cursor:pointer;background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;}
+.quick-ips{font-size:11px;color:var(--sub);margin-bottom:14px;}
+.quick-ips a{color:var(--brand);cursor:pointer;text-decoration:none;margin-right:8px;}
+
+.detail-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+.detail-name{font-size:16px;font-weight:800;}
+.detail-meta{font-size:12px;color:var(--sub);margin-top:2px;}
+.add-fleet{margin-top:8px;border:none;background:rgba(46,125,50,.14);color:var(--success);
+  font-weight:700;font-size:12px;padding:8px 14px;border-radius:9px;cursor:pointer;}
+.detail-lowest{margin:12px 0;padding:12px 14px;border-radius:12px;font-size:13px;font-weight:600;}
+.detail-lowest.crit{background:rgba(198,40,40,.1);color:var(--error);}
+.detail-lowest.low{background:rgba(249,115,22,.1);color:var(--low);}
+.detail-lowest.ok{background:rgba(46,125,50,.1);color:var(--success);}
+
+.grp{margin-top:14px;}
+.grp-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;
+  color:var(--sub);margin-bottom:8px;display:flex;justify-content:space-between;}
+.supply{display:flex;align-items:center;gap:10px;margin-bottom:7px;font-size:12.5px;}
+.supply .snm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.supply .strack{width:120px;height:7px;border-radius:6px;background:var(--border);overflow:hidden;flex-shrink:0;}
+.supply .strack>div{height:100%;border-radius:6px;}
+.supply .spct{width:44px;text-align:right;font-weight:700;flex-shrink:0;}
+.fill-c{background:#06b6d4;} .fill-m{background:#ec4899;} .fill-y{background:#eab308;}
+.fill-k{background:#64748b;} .fill-x{background:var(--brand);}
+
+.empty{text-align:center;padding:40px 20px;color:var(--sub);font-size:13px;}
+.spin{display:inline-block;animation:sp 1s linear infinite;}@keyframes sp{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="logo">D</div>
+    <div><strong>Dangote Refinery</strong><span>Toner Center</span></div>
+  </div>
+  <div class="topbar-actions">
+    <a href="/dashboard">Dashboard</a>
+    <a href="/manage-printers">Manage Printers</a>
+    <a href="/">Home</a>
+    <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">🌓</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- LEFT: NEEDS ATTENTION -->
+  <div class="panel">
+    <h3>Needs Attention <span id="attMeta" class="hint" style="margin:0;"></span></h3>
+    <div class="hint">Lowest toner across the fleet, from the last daily scan. Most urgent first.</div>
+    <div id="attList"><div class="empty">Loading…</div></div>
+    <div class="offline-strip" id="offlineStrip" style="display:none;"></div>
+  </div>
+
+  <!-- RIGHT: CHECK ANY PRINTER -->
+  <div class="panel">
+    <h3>Check a Printer</h3>
+    <div class="hint">Live, full detail for any printer — toner, drum, developer, fuser, transfer, waste.</div>
+    <div class="check-row">
+      <input id="ipInput" placeholder="Enter printer IP e.g. 172.20.231.74"
+             onkeydown="if(event.key==='Enter') checkIp()">
+      <button onclick="checkIp()" id="checkBtn">Check</button>
+    </div>
+    <div class="quick-ips" id="quickIps"></div>
+    <div id="detail"><div class="empty">Enter a printer IP above, or click one from the Needs-Attention list.</div></div>
+  </div>
+
+</div>
+
+<script>
+/* ---- theme ---- */
+function applyTheme(t){ if(t==="dark")document.documentElement.setAttribute("data-theme","dark");
+  else document.documentElement.removeAttribute("data-theme"); localStorage.setItem("theme",t); }
+function toggleTheme(){ const c=document.documentElement.getAttribute("data-theme");
+  applyTheme(c==="dark"?"light":"dark"); }
+(function(){const s=localStorage.getItem("theme");
+  if(s)applyTheme(s); else if(matchMedia("(prefers-color-scheme: dark)").matches)applyTheme("dark");})();
+
+/* ---- helpers ---- */
+function esc(s){return (s||"").toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function pctColor(p){ if(p==null)return "var(--sub)"; if(p<=10)return "var(--error)";
+  if(p<=25)return "var(--low)"; if(p<=50)return "var(--warning)"; return "var(--success)"; }
+function statusBadge(s){
+  const map={Critical:"b-crit",Low:"b-low",Moderate:"b-mod",Healthy:"b-ok",
+             Offline:"b-off",Unknown:"b-off"};
+  return `<span class="badge ${map[s]||"b-off"}">${esc(s||"Unknown")}</span>`;
+}
+function fillClass(colour){ return colour?("fill-"+colour):"fill-x"; }
+
+let lastDetail = null;   // remember the last live-checked printer (for Add to Fleet)
+
+/* ---- Needs Attention ---- */
+async function loadAttention(){
+  try{
+    const res=await fetch("/api/toner-attention");
+    const j=await res.json();
+    if(!j.success){ document.getElementById("attList").innerHTML=
+      `<div class="empty">Error: ${esc(j.error||"unknown")}</div>`; return; }
+
+    const scan=j.scan||{};
+    document.getElementById("attMeta").textContent =
+      scan.last_finished ? ("Scan: "+scan.last_finished) : "";
+
+    const items=j.data.attention||[];
+    const list=document.getElementById("attList");
+
+    if(!items.length){
+      list.innerHTML=`<div class="empty">No online printers with toner data yet.<br>Run a scan from the Dashboard.</div>`;
+    } else {
+      list.innerHTML=items.map((a,i)=>{
+        const col=pctColor(a.lowest_pct);
+        const rankBg = i===0?"var(--error)": i===1?"var(--low)": i===2?"var(--warning)":"var(--sub)";
+        return `
+        <div class="att-item">
+          <div class="att-rank" style="background:${rankBg}">${i+1}</div>
+          <div class="info">
+            <div class="nm">${esc(a.display_name||a.ip)}</div>
+            <div class="lo">${esc(a.lowest_toner||"")} · ${esc(a.location||a.ip)}</div>
+            <div class="att-bar"><div style="width:${a.lowest_pct||0}%;background:${col}"></div></div>
+          </div>
+          <div style="text-align:right">
+            <div class="att-pct" style="color:${col}">${a.lowest_pct==null?"—":a.lowest_pct+"%"}</div>
+            <button class="att-check" onclick="checkIpValue('${esc(a.ip)}')">Details</button>
+          </div>
+        </div>`;
+      }).join("");
+    }
+
+    // offline chips
+    const off=j.data.offline||[];
+    const strip=document.getElementById("offlineStrip");
+    if(off.length){
+      strip.style.display="block";
+      strip.innerHTML = `Offline / no SNMP (${off.length}): ` +
+        off.map(o=>`<span class="offline-chip" title="${esc(o.ip)}">${esc(o.display_name||o.ip)}</span>`).join("");
+    } else { strip.style.display="none"; }
+
+    // quick IPs for the check box (top few)
+    const quick = items.slice(0,4).map(a=>a.ip);
+    document.getElementById("quickIps").innerHTML =
+      quick.length ? ("Quick: " + quick.map(ip=>`<a onclick="checkIpValue('${esc(ip)}')">${esc(ip)}</a>`).join("")) : "";
+
+  }catch(e){
+    document.getElementById("attList").innerHTML=`<div class="empty">Could not reach server.</div>`;
+  }
+}
+
+/* ---- Check a Printer (full detail) ---- */
+function checkIpValue(ip){ document.getElementById("ipInput").value=ip; checkIp(); }
+
+async function checkIp(){
+  const ip=document.getElementById("ipInput").value.trim();
+  const box=document.getElementById("detail");
+  if(!ip){ box.innerHTML=`<div class="empty">Please enter an IP.</div>`; return; }
+
+  box.innerHTML=`<div class="empty"><span class="spin">⟳</span> Checking ${esc(ip)} live…</div>`;
+
+  try{
+    const res=await fetch("/api/toner-check?ip="+encodeURIComponent(ip));
+    const j=await res.json();
+    if(!j.success){ box.innerHTML=`<div class="empty">Error: ${esc(j.error||"unknown")}</div>`; return; }
+    lastDetail = j.data;
+    renderDetail(j.data);
+  }catch(e){
+    box.innerHTML=`<div class="empty">Could not reach server.</div>`;
+  }
+}
+
+/* ---- Add the currently-checked printer to the monitored fleet ---- */
+async function addCheckedToFleet(){
+  if(!lastDetail || !lastDetail.ip) return;
+  const name = prompt("Name for this printer in the fleet:",
+                      lastDetail.printer_name || lastDetail.display_name || lastDetail.ip);
+  if(name===null) return;
+  const location = prompt("Location (optional):", "") || "";
+  try{
+    const res = await fetch("/api/manage-printers", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ display_name:name, ip:lastDetail.ip, location })
+    });
+    const j = await res.json();
+    if(j.success){ alert("Added to fleet: "+name); loadAttention(); }
+    else { alert("Could not add: "+(j.error||"unknown")); }
+  }catch(e){ alert("Could not reach server."); }
+}
+
+function renderDetail(d){
+  const box=document.getElementById("detail");
+
+  if(!d.online){
+    box.innerHTML=`
+      <div class="detail-head">
+        <div><div class="detail-name">${esc(d.display_name||d.ip)}</div>
+        <div class="detail-meta">${esc(d.ip)}</div></div>
+        ${statusBadge(d.overall_status)}
+      </div>
+      <div class="empty">⚠ ${esc(d.error||"No SNMP response — printer offline or SNMP disabled.")}</div>`;
+    return;
+  }
+
+  // lowest headline
+  let lo="";
+  if(d.lowest){
+    const cls = d.lowest.percentage<=10?"crit": d.lowest.percentage<=25?"low":"ok";
+    lo=`<div class="detail-lowest ${cls}">Lowest: ${esc(d.lowest.name)} — ${d.lowest.percentage}% (${esc(d.lowest.status)})</div>`;
+  }
+
+  // groups
+  const order=["Toner","Drum","Developer","Fuser","Transfer","Charger","Waste","Maintenance","Other"];
+  const groups=d.groups||{};
+  let groupsHtml="";
+  order.forEach(cat=>{
+    const items=groups[cat]; if(!items||!items.length)return;
+    const rows=items.map(it=>{
+      const p=it.percentage;
+      const pct = (p==null)?"—":p+"%";
+      const w = (p==null)?0:p;
+      const col=pctColor(p);
+      return `
+        <div class="supply">
+          <div class="snm">${esc(it.name)}</div>
+          <div class="strack"><div class="${fillClass(it.colour)}" style="width:${w}%;background:${it.colour?'':col}"></div></div>
+          <div class="spct" style="color:${col}">${pct}</div>
+        </div>`;
+    }).join("");
+    groupsHtml+=`<div class="grp"><div class="grp-title"><span>${cat}</span><span>${items.length}</span></div>${rows}</div>`;
+  });
+
+  box.innerHTML=`
+    <div class="detail-head">
+      <div>
+        <div class="detail-name">${esc(d.display_name||d.printer_name||d.ip)}</div>
+        <div class="detail-meta">${esc(d.ip)} · ${esc(d.printer_name||"")} · ${d.total_supplies} supplies · checked ${esc((d.last_checked||"").split(" ")[1]||"")}</div>
+        <button class="add-fleet" onclick="addCheckedToFleet()">＋ Add to Fleet</button>
+      </div>
+      ${statusBadge(d.overall_status)}
+    </div>
+    ${lo}
+    ${groupsHtml || `<div class="empty">No supply data reported.</div>`}`;
+}
+
+/* ---- boot ---- */
+loadAttention();
+setInterval(loadAttention, 60000);   // cheap: reads daily-scan cache
+</script>
+</body>
+</html>
