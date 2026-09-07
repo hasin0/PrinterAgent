@@ -73,7 +73,6 @@ try:
 except Exception:
     PRINTERS = {}
 
-
 if __name__ == "__main__":
     printers = get_all_printers()
     print(f"{len(printers)} printers in registry:\n")
