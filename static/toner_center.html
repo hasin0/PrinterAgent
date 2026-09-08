@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,6 +5,7 @@
 <title>Toner Center — PrinterAgent</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root{
   --bg:#f5f7fb; --panel:#ffffff; --border:#eef2f7; --text:#0f172a; --sub:#64748b;
@@ -90,9 +90,16 @@ body{background:var(--bg);color:var(--text);font-size:14px;transition:background
 .detail-lowest.low{background:rgba(249,115,22,.1);color:var(--low);}
 .detail-lowest.ok{background:rgba(46,125,50,.1);color:var(--success);}
 
+/* Page-count tiles */
+.counts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0;}
+.cbox{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;}
+.cbox .cn{font-size:18px;font-weight:800;}
+.cbox .cl{font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:.4px;margin-top:2px;}
+
 .grp{margin-top:14px;}
 .grp-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;
-  color:var(--sub);margin-bottom:8px;display:flex;justify-content:space-between;}
+  color:var(--sub);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+.grp-title .yl{font-size:11px;font-weight:700;color:var(--brand);text-transform:none;letter-spacing:0;}
 .supply{display:flex;align-items:center;gap:10px;margin-bottom:7px;font-size:12.5px;}
 .supply .snm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .supply .strack{width:120px;height:7px;border-radius:6px;background:var(--border);overflow:hidden;flex-shrink:0;}
@@ -100,6 +107,7 @@ body{background:var(--bg);color:var(--text);font-size:14px;transition:background
 .supply .spct{width:44px;text-align:right;font-weight:700;flex-shrink:0;}
 .fill-c{background:#06b6d4;} .fill-m{background:#ec4899;} .fill-y{background:#eab308;}
 .fill-k{background:#64748b;} .fill-x{background:var(--brand);}
+.trend-note{font-size:11px;color:var(--sub);text-align:center;padding:10px;}
 
 .empty{text-align:center;padding:40px 20px;color:var(--sub);font-size:13px;}
 .spin{display:inline-block;animation:sp 1s linear infinite;}@keyframes sp{to{transform:rotate(360deg);}}
@@ -133,7 +141,7 @@ body{background:var(--bg);color:var(--text);font-size:14px;transition:background
   <!-- RIGHT: CHECK ANY PRINTER -->
   <div class="panel">
     <h3>Check a Printer</h3>
-    <div class="hint">Live, full detail for any printer — toner, drum, developer, fuser, transfer, waste.</div>
+    <div class="hint">Live, full detail — toner, drum, developer, fuser, transfer, waste, page counts &amp; 7-day trend.</div>
     <div class="check-row">
       <input id="ipInput" placeholder="Enter printer IP e.g. 172.20.231.74"
              onkeydown="if(event.key==='Enter') checkIp()">
@@ -164,8 +172,25 @@ function statusBadge(s){
   return `<span class="badge ${map[s]||"b-off"}">${esc(s||"Unknown")}</span>`;
 }
 function fillClass(colour){ return colour?("fill-"+colour):"fill-x"; }
+function fmtNum(n){ return (n==null) ? "—" : Number(n).toLocaleString(); }
 
-let lastDetail = null;   // remember the last live-checked printer (for Add to Fleet)
+let lastDetail = null;      // last live-checked printer (for Add to Fleet)
+let printerMap = {};        // ip -> {key, display_name, location}
+let pagesChartObj = null;
+
+/* ---- Build ip->key map from the managed fleet ---- */
+async function loadPrinterMap(){
+  try{
+    const res = await fetch("/api/manage-printers");
+    const j = await res.json();
+    if(j.success && j.data){
+      printerMap = {};
+      for(const [key, p] of Object.entries(j.data)){
+        if(p && p.ip) printerMap[p.ip] = { key, display_name:p.display_name, location:p.location };
+      }
+    }
+  }catch(e){ /* ignore - trend just won't show */ }
+}
 
 /* ---- Needs Attention ---- */
 async function loadAttention(){
@@ -204,7 +229,6 @@ async function loadAttention(){
       }).join("");
     }
 
-    // offline chips
     const off=j.data.offline||[];
     const strip=document.getElementById("offlineStrip");
     if(off.length){
@@ -213,7 +237,6 @@ async function loadAttention(){
         off.map(o=>`<span class="offline-chip" title="${esc(o.ip)}">${esc(o.display_name||o.ip)}</span>`).join("");
     } else { strip.style.display="none"; }
 
-    // quick IPs for the check box (top few)
     const quick = items.slice(0,4).map(a=>a.ip);
     document.getElementById("quickIps").innerHTML =
       quick.length ? ("Quick: " + quick.map(ip=>`<a onclick="checkIpValue('${esc(ip)}')">${esc(ip)}</a>`).join("")) : "";
@@ -223,7 +246,7 @@ async function loadAttention(){
   }
 }
 
-/* ---- Check a Printer (full detail) ---- */
+/* ---- Check a Printer ---- */
 function checkIpValue(ip){ document.getElementById("ipInput").value=ip; checkIp(); }
 
 async function checkIp(){
@@ -239,12 +262,17 @@ async function checkIp(){
     if(!j.success){ box.innerHTML=`<div class="empty">Error: ${esc(j.error||"unknown")}</div>`; return; }
     lastDetail = j.data;
     renderDetail(j.data);
+    // draw the 7-day trend if this IP maps to a known registry key
+    const mapped = printerMap[ip];
+    if(mapped && mapped.key){ loadPagesTrend(mapped.key); }
+    else { const note=document.getElementById("trendNote");
+           if(note) note.textContent="Add this printer to the fleet to track its 7-day trend."; }
   }catch(e){
     box.innerHTML=`<div class="empty">Could not reach server.</div>`;
   }
 }
 
-/* ---- Add the currently-checked printer to the monitored fleet ---- */
+/* ---- Add to fleet ---- */
 async function addCheckedToFleet(){
   if(!lastDetail || !lastDetail.ip) return;
   const name = prompt("Name for this printer in the fleet:",
@@ -257,9 +285,61 @@ async function addCheckedToFleet(){
       body: JSON.stringify({ display_name:name, ip:lastDetail.ip, location })
     });
     const j = await res.json();
-    if(j.success){ alert("Added to fleet: "+name); loadAttention(); }
+    if(j.success){ alert("Added to fleet: "+name); await loadPrinterMap(); loadAttention(); }
     else { alert("Could not add: "+(j.error||"unknown")); }
   }catch(e){ alert("Could not reach server."); }
+}
+
+/* ---- 7-day pages/day trend (computes deltas from raw history) ---- */
+async function loadPagesTrend(key){
+  const note = document.getElementById("trendNote");
+  try{
+    const res = await fetch(`/api/page-count-history/${encodeURIComponent(key)}?days=8`);
+    const j = await res.json();
+    if(!j.success || !j.data){ if(note) note.textContent="No page-count history yet."; return; }
+
+    // rows: [{total_pages, recorded_at}] oldest->newest. One reading/day.
+    const rows = j.data.filter(r => r.total_pages != null);
+    if(rows.length < 2){
+      if(note) note.textContent="Collecting history… need 2+ daily readings for a trend.";
+      return;
+    }
+
+    // compute per-day deltas
+    const labels = [];
+    const deltas = [];
+    for(let i=1;i<rows.length;i++){
+      const day = (rows[i].recorded_at||"").slice(5,10);   // MM-DD
+      const d = Math.max(rows[i].total_pages - rows[i-1].total_pages, 0);
+      labels.push(day); deltas.push(d);
+    }
+    // keep last 7
+    const L = labels.slice(-7), D = deltas.slice(-7);
+
+    const ctx = document.getElementById("pagesChart");
+    if(!ctx) return;
+    if(note) note.textContent = "";
+    if(pagesChartObj) pagesChartObj.destroy();
+
+    const dark = document.documentElement.getAttribute("data-theme")==="dark";
+    const tick = dark ? "#94a3b8" : "#64748b";
+    const grid = dark ? "rgba(255,255,255,.06)" : "rgba(15,23,42,.06)";
+
+    pagesChartObj = new Chart(ctx, {
+      type:"bar",
+      data:{ labels:L, datasets:[{ label:"Pages/day", data:D, backgroundColor:"#0067b8", borderRadius:4 }] },
+      options:{
+        plugins:{ legend:{display:false} },
+        scales:{
+          x:{ grid:{display:false}, ticks:{color:tick} },
+          y:{ beginAtZero:true, grid:{color:grid}, ticks:{color:tick} }
+        }
+      }
+    });
+  }catch(e){
+    if(note) note.textContent="Trend unavailable.";
+    console.error("pages trend failed", e);
+  }
 }
 
 function renderDetail(d){
@@ -283,7 +363,19 @@ function renderDetail(d){
     lo=`<div class="detail-lowest ${cls}">Lowest: ${esc(d.lowest.name)} — ${d.lowest.percentage}% (${esc(d.lowest.status)})</div>`;
   }
 
-  // groups
+  // page-count tiles (from d.page_counts if the API attached them)
+  let counts = "";
+  const pc = d.page_counts;
+  if (pc && (pc.total != null || pc.mono != null || pc.color != null)) {
+    counts = `
+      <div class="counts">
+        <div class="cbox"><div class="cn">${fmtNum(pc.total)}</div><div class="cl">Total pages</div></div>
+        <div class="cbox"><div class="cn">${fmtNum(pc.mono)}</div><div class="cl">Black &amp; White</div></div>
+        <div class="cbox"><div class="cn">${fmtNum(pc.color)}</div><div class="cl">Colour</div></div>
+      </div>`;
+  }
+
+  // supply groups
   const order=["Toner","Drum","Developer","Fuser","Transfer","Charger","Waste","Maintenance","Other"];
   const groups=d.groups||{};
   let groupsHtml="";
@@ -304,6 +396,14 @@ function renderDetail(d){
     groupsHtml+=`<div class="grp"><div class="grp-title"><span>${cat}</span><span>${items.length}</span></div>${rows}</div>`;
   });
 
+  // 7-day trend block (canvas filled after render by loadPagesTrend)
+  const trend = `
+    <div class="grp">
+      <div class="grp-title"><span>7-Day Pages / Day</span><span class="yl" id="yieldLbl"></span></div>
+      <canvas id="pagesChart" height="120"></canvas>
+      <div class="trend-note" id="trendNote">Loading trend…</div>
+    </div>`;
+
   box.innerHTML=`
     <div class="detail-head">
       <div>
@@ -314,12 +414,15 @@ function renderDetail(d){
       ${statusBadge(d.overall_status)}
     </div>
     ${lo}
-    ${groupsHtml || `<div class="empty">No supply data reported.</div>`}`;
+    ${counts}
+    ${groupsHtml || `<div class="empty">No supply data reported.</div>`}
+    ${trend}`;
 }
 
 /* ---- boot ---- */
+loadPrinterMap();
 loadAttention();
-setInterval(loadAttention, 60000);   // cheap: reads daily-scan cache
+setInterval(loadAttention, 60000);
 </script>
 </body>
 </html>

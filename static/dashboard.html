@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -54,6 +55,9 @@ body {
     font-size: 14px;
     transition: background 0.4s ease, color 0.4s ease;
 }
+
+html { scroll-behavior: smooth; }
+#sapLogSection { scroll-margin-top: 20px; }
 
 /* ================================
    TOPBAR
@@ -376,6 +380,59 @@ tr:hover { background: rgba(0,103,184,.04); }
     padding:8px 10px; border-radius:8px;
 }
 .toner-empty { text-align:center; padding:30px; color:var(--sub); font-size:13px; }
+
+/* ================================
+   PAGE COUNTS
+   ================================ */
+.pc-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.pc-refresh{padding:8px 12px;border-radius:8px;border:1px solid var(--border);
+  background:var(--panel);color:var(--text);cursor:pointer;font-weight:600;font-size:12px;}
+.pc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
+.pc-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
+.pc-name{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pc-loc{font-size:11px;color:var(--sub);margin-top:2px;}
+.pc-total{font-size:26px;font-weight:800;margin-top:10px;line-height:1;}
+.pc-total small{font-size:11px;color:var(--sub);font-weight:600;}
+.pc-today{margin-top:8px;font-size:12px;font-weight:700;display:inline-block;
+  padding:3px 9px;border-radius:999px;background:rgba(0,103,184,.12);color:var(--brand);}
+.pc-today.zero{background:rgba(100,116,139,.12);color:var(--sub);}
+.pc-empty{text-align:center;padding:26px;color:var(--sub);font-size:13px;}
+
+/* ================================
+   SAP CONFIGURATION LOG
+   ================================ */
+.sap-summary {
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:14px;
+    margin-bottom:16px;
+}
+@media (max-width:1100px){ .sap-summary{ grid-template-columns:repeat(2,1fr); } }
+
+.sap-summary .mini {
+    background: var(--bg);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:12px 14px;
+    text-align:center;
+}
+.sap-summary .mini .n { font-size:22px; font-weight:800; }
+.sap-summary .mini .l {
+    font-size:11px; color:var(--sub); text-transform:uppercase;
+    letter-spacing:.4px; margin-top:2px;
+}
+.sap-summary .mini .n.ok   { color: var(--success); }
+.sap-summary .mini .n.bad  { color: var(--error); }
+.sap-summary .mini .n.idle { color: var(--sub); }
+.sap-summary .mini .n.brand{ color: var(--brand); }
+
+.src-pill {
+    font-size:10.5px; font-weight:700; padding:3px 8px;
+    border-radius:999px; white-space:nowrap;
+}
+.src-user   { background:rgba(46,125,50,.15);  color:var(--success); }
+.src-server { background:rgba(100,116,139,.15);color:var(--sub); }
+
 </style>
 </head>
 <body>
@@ -390,9 +447,12 @@ tr:hover { background: rgba(0,103,184,.04); }
         </div>
     </div>
     <div class="topbar-actions">
-        /">Home</a>
-        /portal">Portal</a>
+        <a href="/">Home</a>
+        <a href="/portal">Portal</a>
         <a href="#tonerSection">Toner</a>
+        <a href="#pageCountSection">Pages</a>
+        <a href="#sapLogSection">SAP</a>
+        <a href="/manage-printers">Manage</a>
         <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">🌓</button>
         <span style="font-size:12px;color:var(--sub)">Live · <span id="lastUpdate">--:--</span></span>
     </div>
@@ -510,6 +570,58 @@ tr:hover { background: rgba(0,103,184,.04); }
     </div>
 </div>
 
+<!-- ================================ PAGE COUNTS ================================ -->
+<div class="panel" id="pageCountSection">
+    <h3>Page Counts <span>Meter reads · busiest first</span></h3>
+    <div class="pc-toolbar">
+        <div style="font-size:12px;color:var(--sub);">Lifetime total pages and pages printed today.</div>
+        <button class="pc-refresh" onclick="refreshPageCounts()">🔄 Take Reading</button>
+    </div>
+    <div class="pc-grid" id="pcGrid">
+        <div class="pc-empty">Loading page counts…</div>
+    </div>
+</div>
+
+<!-- ================================ SAP CONFIGURATION LOG ================================ -->
+<div class="panel" id="sapLogSection">
+    <h3>SAP Configuration Log <span id="sapLogChecked">Loading...</span></h3>
+
+    <div class="sap-summary">
+        <div class="mini"><div class="n ok"   id="sl_success">0</div><div class="l">Successful</div></div>
+        <div class="mini"><div class="n bad"  id="sl_failed">0</div><div class="l">Failed</div></div>
+        <div class="mini"><div class="n brand" id="sl_pcs">0</div><div class="l">Unique PCs</div></div>
+        <div class="mini"><div class="n idle" id="sl_total">0</div><div class="l">Total Runs</div></div>
+    </div>
+
+    <div class="table-tools">
+        <input id="sapLogSearch" placeholder="Search user, computer..." oninput="renderSapLog()">
+        <select id="sapLogFilter" onchange="renderSapLog()">
+            <option value="">All Outcomes</option>
+            <option value="success">Successful only</option>
+            <option value="failed">Failed only</option>
+        </select>
+        <button onclick="loadSapLog()">🔄 Refresh</button>
+        <button onclick="exportSapLog()">⬇ CSV</button>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>User</th>
+                    <th>Computer</th>
+                    <th>Systems</th>
+                    <th>Outcome</th>
+                    <th>Ticket</th>
+                    <th>Source</th>
+                </tr>
+            </thead>
+            <tbody id="sapLogBody"></tbody>
+        </table>
+    </div>
+</div>
+
 <!-- ================================ INSIGHT PANELS ================================ -->
 <div class="grid cols-3">
     <div class="panel">
@@ -518,6 +630,7 @@ tr:hover { background: rgba(0,103,184,.04); }
         <div class="health"><span>Playwright Agent</span><span class="dot-ok">● Running</span></div>
         <div class="health"><span>Logger</span><span class="dot-ok">● Writing</span></div>
         <div class="health"><span>FreshService API</span><span class="dot-ok">● Connected</span></div>
+        <div class="health"><span>SAP Config Agent</span><span id="healthSap" class="dot-warn">● Checking</span></div>
     </div>
 
     <div class="panel">
@@ -527,10 +640,14 @@ tr:hover { background: rgba(0,103,184,.04); }
 
     <div class="panel quick">
         <h3>Quick Actions</h3>
-        /portal">🖨 Request Printer</a>
+        <a href="/portal">🖨 Request Printer</a>
         <a href="#tonerSection">🧴 Toner Monitor</a>
-        /">🏠 Home Portal</a>
-        /api/logs" target="_blank">📊 Raw Logs API</a>
+        <a href="/toner">🧾 Toner Center</a>
+        <a href="/manage-printers">🖥️ Manage Printers</a>
+        <a href="#pageCountSection">📄 Page Counts</a>
+        <a href="#sapLogSection">🧩 SAP Config Log</a>
+        <a href="/">🏠 Home Portal</a>
+        <a href="/api/logs" target="_blank">📊 Raw Logs API</a>
         <a href="https://dangote.freshservice.com/" target="_blank">🎫 Open FreshService</a>
     </div>
 </div>
@@ -1031,6 +1148,178 @@ document.addEventListener("click", (e) => {
 
 
 /* ================================
+   PAGE COUNTS
+   ================================ */
+function fmtNum(n){ return (n==null) ? "—" : Number(n).toLocaleString(); }
+
+function pcCard(p){
+    const total = fmtNum(p.total_pages);
+    const today = p.printed_today;
+    const todayHtml = (today==null)
+        ? `<span class="pc-today zero">no baseline yet</span>`
+        : (today>0
+            ? `<span class="pc-today">+${fmtNum(today)} today</span>`
+            : `<span class="pc-today zero">0 today</span>`);
+    return `
+      <div class="pc-card">
+        <div class="pc-name">${(p.display_name||p.ip||"")}</div>
+        <div class="pc-loc">${p.ip||""}</div>
+        <div class="pc-total">${total} <small>pages</small></div>
+        ${todayHtml}
+      </div>`;
+}
+
+async function loadPageCounts(){
+    try{
+        const res = await fetch("/api/page-counts");
+        const j = await res.json();
+        const grid = document.getElementById("pcGrid");
+        if(!j.success){ grid.innerHTML = `<div class="pc-empty">Error: ${j.error||"unknown"}</div>`; return; }
+        if(!j.data || !j.data.length){
+            grid.innerHTML = `<div class="pc-empty">No readings yet. Click "Take Reading".</div>`;
+            return;
+        }
+        grid.innerHTML = j.data.map(pcCard).join("");
+    }catch(e){
+        document.getElementById("pcGrid").innerHTML = `<div class="pc-empty">Could not reach server.</div>`;
+    }
+}
+
+async function refreshPageCounts(){
+    const grid = document.getElementById("pcGrid");
+    grid.innerHTML = `<div class="pc-empty">Reading meters from the fleet… this takes a few seconds.</div>`;
+    try{
+        const res = await fetch("/api/page-counts/refresh", { method:"POST" });
+        const j = await res.json();
+        if(!j.success){ grid.innerHTML = `<div class="pc-empty">Error: ${j.error||"unknown"}</div>`; return; }
+        grid.innerHTML = (j.data && j.data.length)
+            ? j.data.map(pcCard).join("")
+            : `<div class="pc-empty">No printers responded.</div>`;
+    }catch(e){
+        grid.innerHTML = `<div class="pc-empty">Could not reach server.</div>`;
+    }
+}
+
+
+/* ================================
+   SAP CONFIGURATION LOG
+   ================================ */
+let sapLogData = [];
+
+async function loadSapLog() {
+    try {
+        const res = await fetch("/sap/logs?limit=500");
+        const data = await res.json();
+
+        // /sap/logs may return a raw list or {logs:[...]}
+        sapLogData = Array.isArray(data) ? data : (data.logs || []);
+
+        renderSapLogSummary();
+        renderSapLog();
+        updateSapHealth();
+
+        document.getElementById("sapLogChecked").innerText =
+            "Updated " + new Date().toLocaleTimeString();
+    } catch (e) {
+        console.error("SAP log load failed:", e);
+        document.getElementById("sapLogChecked").innerText = "Log unavailable";
+        const h = document.getElementById("healthSap");
+        if (h) { h.className = "dot-err"; h.innerText = "● Offline"; }
+    }
+}
+
+function renderSapLogSummary() {
+    const success = sapLogData.filter(e => e.success).length;
+    const failed  = sapLogData.filter(e => !e.success).length;
+    const pcs     = new Set(
+        sapLogData.filter(e => e.success && e.computer)
+                  .map(e => (e.computer || "").toLowerCase())
+    ).size;
+
+    document.getElementById("sl_success").innerText = success;
+    document.getElementById("sl_failed").innerText  = failed;
+    document.getElementById("sl_pcs").innerText     = pcs;
+    document.getElementById("sl_total").innerText   = sapLogData.length;
+}
+
+function updateSapHealth() {
+    const h = document.getElementById("healthSap");
+    if (!h) return;
+    const recentFail = sapLogData.slice(-5).some(e => !e.success);
+    if (sapLogData.length === 0) {
+        h.className = "dot-warn"; h.innerText = "● No runs yet";
+    } else if (recentFail) {
+        h.className = "dot-warn"; h.innerText = "● Recent failure";
+    } else {
+        h.className = "dot-ok"; h.innerText = "● Operational";
+    }
+}
+
+function sapTicketCell(entry) {
+    const fs = entry.freshservice || {};
+    const st = fs.success_ticket || fs.failure_ticket || fs;
+    const id = st.ticket_id;
+    if (!id) return "-";
+    return `<a href="https://${FS_DOMAIN}/a/tickets/${id}" target="_blank">SR-${id}</a>`;
+}
+
+function renderSapLog() {
+    const q = (document.getElementById("sapLogSearch").value || "").toLowerCase();
+    const f = document.getElementById("sapLogFilter").value;
+    const body = document.getElementById("sapLogBody");
+
+    let rows = [...sapLogData].reverse();  // newest first
+
+    if (f === "success") rows = rows.filter(e => e.success);
+    if (f === "failed")  rows = rows.filter(e => !e.success);
+
+    if (q) {
+        rows = rows.filter(e =>
+            (e.user || "").toLowerCase().includes(q) ||
+            (e.computer || "").toLowerCase().includes(q)
+        );
+    }
+
+    body.innerHTML = rows.map(e => {
+        const outcome = e.success
+            ? '<span class="badge b-success">Success</span>'
+            : '<span class="badge b-error">Failed</span>';
+        const systems = (e.systems || []).join(", ") || "-";
+        const isClient = (e.source || "").includes("client");
+        const src = isClient
+            ? '<span class="src-pill src-user">User PC</span>'
+            : '<span class="src-pill src-server">Server</span>';
+
+        return `
+            <tr>
+                <td>${e.timestamp ? new Date(e.timestamp).toLocaleString() : "-"}</td>
+                <td>${e.user || ""}</td>
+                <td>${e.computer || ""}</td>
+                <td>${systems}</td>
+                <td>${outcome}</td>
+                <td>${sapTicketCell(e)}</td>
+                <td>${src}</td>
+            </tr>`;
+    }).join("") ||
+    `<tr><td colspan="7" style="padding:20px;text-align:center;color:var(--sub);">No configuration records yet</td></tr>`;
+}
+
+function exportSapLog() {
+    const headers = ["timestamp","user","computer","systems","success","message"];
+    const rows = sapLogData.map(e =>
+        headers.map(h => {
+            let v = e[h];
+            if (h === "systems") v = (e.systems || []).join("; ");
+            if (h === "success") v = e.success ? "Success" : "Failed";
+            return `"${(v ?? "").toString().replace(/"/g,'""')}"`;
+        }).join(",")
+    );
+    const csv = headers.join(",") + "\n" + rows.join("\n");
+    download("SAP_Configuration_Log.csv", csv, "text/csv");
+}
+
+
+/* ================================
    THEME
    ================================ */
 function applyTheme(theme) {
@@ -1060,12 +1349,16 @@ async function boot() {
         loadLogs(),
         loadPrinters(),
         loadPrinterMap(),
-        loadToners()
+        loadToners(),
+        loadPageCounts(),
+        loadSapLog()
     ]);
     render();
     setInterval(loadLogs, 15000);
     setInterval(loadPrinters, 60000);
     setInterval(loadToners, 5 * 60000);   // toner refresh every 5 min (SNMP is slower)
+    setInterval(loadPageCounts, 5 * 60000);  // cheap cache read
+    setInterval(loadSapLog, 60000);          // SAP config log
 }
 
 boot();

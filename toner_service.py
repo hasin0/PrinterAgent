@@ -134,6 +134,27 @@ async def run_fleet_scan(community="public"):
             # 1) SNMP scan (updates in-memory cache + snapshot inside)
             results = await get_all_toner_status(community)
 
+
+               # --- record page counters for trend + yield ---
+            try:
+                from page_counts import get_page_counts
+                import page_counts_db
+                for r in results:
+                    if not r.get("online"):
+                        continue
+                    pc = await get_page_counts(r["ip"])
+                    # find current Black % from the toners list (for refill detection)
+                    black_pct = None
+                    for t in r.get("toners", []):
+                        if "black" in (t.get("name","").lower()):
+                            black_pct = t.get("percentage"); break
+                    page_counts_db.record(
+                        r.get("key") or r.get("ip"), r.get("ip"),
+                        pc.get("total"), pc.get("mono"), pc.get("color"), black_pct
+                    )
+            except Exception as exc:
+                print(f"WARNING: page-count record failed: {exc}")
+
             # 2) Reachability: Online vs SNMP-Disabled vs Offline
             if _HAS_REACH:
                 try:

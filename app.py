@@ -21,6 +21,9 @@ from pydantic import BaseModel
 from urllib.parse import urlencode
 import os
 
+import pagecount_db            # ✅ CORRECT
+from page_counts import get_page_count, read_all_page_counts, read_page_count   # ✅
+
 # ================================
 # TOOLS / AGENTS
 # ================================
@@ -64,6 +67,15 @@ from toner_detail import build_full_detail, attention_list
 
 # Printer registry (web-UI managed via data/printers.json)
 import printers_store
+import pagecount_db
+from pagecount_db import (
+    init_pagecount_db,
+    record_page_counts,
+    get_today_deltas,
+    get_printer_page_history,
+)
+from page_counts import read_all_page_counts, read_page_count
+
 
 
 # ================================
@@ -87,7 +99,8 @@ async def on_startup():
     toner_db.init_db()              # ensure history DB + table exist
     warm_cache_from_snapshot()      # instant dashboard from last snapshot
     start_background_scanner()      # daily fleet scan in the background
-
+    # init_pagecount_db()
+    pagecount_db.init_pagecount_db() # ✅
 
 @app.on_event("shutdown")
 async def on_shutdown():
@@ -601,6 +614,122 @@ def manage_printers_delete(key: str):
         return {"success": True, "key": key}
     except Exception as exc:
         return {"success": False, "error": str(exc)}
+
+
+# ============================================================
+# PAGE-COUNT ROUTES FOR app.py
+# ============================================================
+# Requires: page_counts.py + pagecount_db.py in the project root.
+# ============================================================
+
+
+# ---- 3) ROUTES ----
+
+@app.get("/api/page-counts")
+def page_counts_today():
+    """
+    Latest total pages + 'printed today' per printer, from the DB cache.
+    Instant (no SNMP). Populated by /api/page-counts/refresh or the
+    background scan.
+    """
+    try:
+        data = get_today_deltas()
+        return {"success": True, "count": len(data), "data": data}
+    except Exception as exc:
+        return {"success": False, "error": str(exc)}
+
+
+@app.post("/api/page-counts/refresh")
+async def page_counts_refresh():
+    """
+    Read page counts LIVE from the whole fleet, store them, and return
+    the fresh today-deltas. Use this to take a reading on demand.
+    """
+    try:
+        rows = await read_all_page_counts()
+        saved = record_page_counts(rows)
+        return {
+            "success": True,
+            "read": len(rows),
+            "saved": saved,
+            "data": get_today_deltas(),
+        }
+    except Exception as exc:
+        return {"success": False, "error": str(exc)}
+
+
+@app.get("/api/page-count/{ip}")
+def page_count_single(ip: str):
+    """Live single-printer meter read by IP."""
+    try:
+        value = read_page_count(ip)
+        return {"success": True, "ip": ip, "total_pages": value}
+    except Exception as exc:
+        return {"success": False, "error": str(exc)}
+
+
+@app.get("/api/page-count-history/{printer_key}")
+def page_count_history(printer_key: str, days: int = 30):
+    try:
+        return {
+            "success": True,
+            "printer_key": printer_key,
+            "data": get_printer_page_history(printer_key, days),
+        }
+    except Exception as exc:
+        return {"success": False, "error": str(exc)}
+
+
+# ---- 4) OPTIONAL: fold page-count reads into the daily toner scan ----
+# In toner_service.py run_fleet_scan(), after the toner work, add:
+#
+#     try:
+#         from page_counts import read_all_page_counts
+#         from pagecount_db import record_page_counts
+#         pc_rows = await read_all_page_counts()
+#         record_page_counts(pc_rows)
+#         print(f"page_counts: recorded {len(pc_rows)} reading(s)")
+#     except Exception as exc:
+#         print(f"WARNING: page-count read failed: {exc}")
+#
+# That way the daily scan also captures meters -> "printed today" builds
+# up automatically with no extra scheduling.
+
+
+
+
+@app.get("/api/page-counts/{printer_key}")
+def page_counts_history(printer_key: str, days: int = 7):
+    """7-day (default) pages-per-day trend for one printer."""
+    try:
+        return {"success": True,
+                "data": page_counts_db.pages_per_day(printer_key, days),
+                "yield": page_counts_db.pages_per_toner(printer_key)}
+    except Exception as exc:
+        return {"success": False, "error": str(exc)}
+
+@app.get("/api/page-counts-live")
+async def page_counts_live(ip: str, community: str = "public"):
+    """Live total/mono/colour for one printer IP (on-demand)."""
+    try:
+        return {"success": True, "data": await get_page_counts(ip, community)}
+    except Exception as exc:
+        return {"success": False, "error": str(exc)}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # ================================

@@ -1,138 +1,192 @@
-PrinterAgent — Deployment Checklist
-Server folder (your REAL one, has venv + tools):
-C:\Users\hassan.abdulmalik\PrinterAgent
-Always start here:
-cd C:\Users\hassan.abdulmalik\PrinterAgent
+# 7-Day Trend + Pages-Per-Toner — Integration
+
+Requires (in C:\Users\hassan.abdulmalik\PrinterAgent\):
+  - page_counts.py        (SNMP counter reader - already provided)
+  - page_counts_db.py     (history + yield - NEW, provided)
+
 ---
-0. Back up first (30 seconds, saves hours)
-```powershell
-cd C:\Users\hassan.abdulmalik
-Copy-Item PrinterAgent PrinterAgent_BACKUP_(Get-Date -Format yyyyMMdd) -Recurse
-```
----
-1. Confirm you are in the RIGHT folder
-```powershell
-cd C:\Users\hassan.abdulmalik\PrinterAgent
-Test-Path .\venv          # must be True
-Test-Path .\tools         # must be True
-```
-If either is False, you're in the wrong copy. The stray `C:\PrinterAgent`
-(no venv/tools) has caused repeated errors — ignore it or rename it:
-```powershell
-Rename-Item C:\PrinterAgent C:\PrinterAgent_OLD -ErrorAction SilentlyContinue
-```
----
-2. Required Python modules (root of PrinterAgent, next to app.py)
-Tick each — must exist in `C:\Users\hassan.abdulmalik\PrinterAgent\`:
-[ ] `app.py`                (this new clean version)
-[ ] `toner_service.py`      (this new version — DAILY scan)
-[ ] `toner_monitor.py`      (v3 — shared+closed SnmpEngine, printers_store import)
-[ ] `printers_store.py`     (fleet registry -> data/printers.json)
-[ ] `toner_detail.py`       (categorisation + attention)
-[ ] `toner_db.py`           (history / forecasts)
-[ ] `reachability.py`       (Online vs SNMP-Disabled — optional but recommended)
-[ ] `sap_routes.py`         (existing)
-[ ] `tools\` folder         (printer_tool, logger_tool, sharp_web_register, etc.)
-Quick check:
-```powershell
-Get-ChildItem *.py | Select-Object Name
-```
----
-3. Required static pages (in static)
-[ ] `static\index.html`
-[ ] `static\portal.html`
-[ ] `static\dashboard.html`
-[ ] `static\toner_center.html`      (Toner Center page)
-[ ] `static\manage_printers.html`   (Add/edit/delete printer IPs)
-[ ] `static\sap.html`
-Quick check:
-```powershell
-Get-ChildItem static\*.html | Select-Object Name
-```
----
-4. Copy the two new files into place
-If they downloaded to Downloads, copy them in (adjust names if suffixed):
-```powershell
-Copy-Item "$env:USERPROFILE\Downloads\app.py"           ".\app.py" -Force
-Copy-Item "$env:USERPROFILE\Downloads\toner_service.py" ".\toner_service.py" -Force
-```
----
-5. Verify toner_monitor.py imports the store correctly
-Open `toner_monitor.py` and confirm this line is NOT commented out
-(near the PRINTERS section):
+
+## STEP 1 — init the DB at startup (app.py)
+
+Import near the top:
+
 ```python
-from printers_store import load_printers
-PRINTERS = load_printers()
+import page_counts_db
 ```
-If it shows `# from printers_store import ...`, remove the `#`.
-Then confirm the store loads:
-```powershell
-.\venv\Scripts\python.exe -c "import printers_store; print(len(printers_store.load_printers()), 'printers')"
+
+In your existing @app.on_event("startup") on_startup(), add:
+
+```python
+    page_counts_db.init_db()
 ```
+
 ---
-6. Compile-check everything (catches typos before launch)
-```powershell
-.\venv\Scripts\python.exe -m py_compile .\app.py .\toner_service.py .\toner_monitor.py .\printers_store.py .\toner_detail.py .\toner_db.py .\reachability.py
+
+## STEP 2 — record counts each daily scan (toner_service.py)
+
+In run_fleet_scan(), after `results = await get_all_toner_status(...)`
+and any enrich step, add:
+
+```python
+    # --- record page counters for trend + yield ---
+    try:
+        from page_counts import get_page_counts
+        import page_counts_db
+        for r in results:
+            if not r.get("online"):
+                continue
+            pc = await get_page_counts(r["ip"])
+            # find current Black % from the toners list (for refill detection)
+            black_pct = None
+            for t in r.get("toners", []):
+                if "black" in (t.get("name","").lower()):
+                    black_pct = t.get("percentage"); break
+            page_counts_db.record(
+                r.get("key") or r.get("ip"), r.get("ip"),
+                pc.get("total"), pc.get("mono"), pc.get("color"), black_pct
+            )
+    except Exception as exc:
+        print(f"WARNING: page-count record failed: {exc}")
 ```
-No output = all good. Any error names the exact file + line.
+
+That's one reading per printer per day (upsert), which is exactly what the
+trend + yield need.
+
 ---
-7. Launch  (IMPORTANT: no --reload, single worker)
-```powershell
-.\venv\Scripts\python.exe -m uvicorn app:app --host 0.0.0.0 --port 8000
+
+## STEP 3 — endpoints (app.py)
+
+```python
+from page_counts import get_page_counts
+
+@app.get("/api/page-counts/{printer_key}")
+def page_counts_history(printer_key: str, days: int = 7):
+    """7-day (default) pages-per-day trend for one printer."""
+    try:
+        return {"success": True,
+                "data": page_counts_db.pages_per_day(printer_key, days),
+                "yield": page_counts_db.pages_per_toner(printer_key)}
+    except Exception as exc:
+        return {"success": False, "error": str(exc)}
+
+@app.get("/api/page-counts-live")
+async def page_counts_live(ip: str, community: str = "public"):
+    """Live total/mono/colour for one printer IP (on-demand)."""
+    try:
+        return {"success": True, "data": await get_page_counts(ip, community)}
+    except Exception as exc:
+        return {"success": False, "error": str(exc)}
 ```
-Do NOT use `--reload` or `--workers 2` — both re-introduce the
-"too many file descriptors in select()" crash on Windows.
-Expected startup log:
-```
-toner_db: ready at ...\data\toner_history.db
-Toner cache warmed from snapshot: N printer(s)
-Toner background scanner started (every 24 hour(s)).
-INFO:     Application startup complete.
-=== Toner fleet scan started ... ===
-```
+
 ---
-8. Smoke test (browser)
-[ ] http://localhost:8000/                    -> home tiles
-[ ] http://localhost:8000/portal              -> printer request form
-[ ] http://localhost:8000/dashboard           -> ops dashboard
-[ ] http://localhost:8000/toner               -> Toner Center loads
-[ ] http://localhost:8000/manage-printers     -> printer registry UI
-[ ] http://localhost:8000/api/toner-status-all -> JSON, success:true
-[ ] http://localhost:8000/api/toner-check?ip=172.20.102.115 -> live detail
----
-9. Fix the fleet registry (the data issue)
-Your registered printers were on `172.16.x.x` (E-BLOCK); you're now testing
-on `172.20.x.x`. Update the fleet so scans find live printers:
-Open http://localhost:8000/manage-printers
-ADD the printers that respond on THIS network (e.g. MCR1 = 172.20.102.115)
-DELETE/EDIT the old E-BLOCK entries whose IPs no longer reachable
-Trigger a scan to populate "Needs Attention":
+
+## STEP 4 — chart in the Toner Center detail panel
+
+The detail panel is keyed by IP, but the trend is keyed by registry KEY.
+Easiest: when you check a printer, also pass its key if known. For the
+on-demand IP check we can still show the LIVE counts (Step 3 of the page-
+counts guide) and, if the IP maps to a known key, the trend.
+
+### 4a. Add Chart.js to toner_center.html <head>:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 ```
-POST http://localhost:8000/api/toner-refresh
+
+### 4b. Add a canvas + yield line into renderDetail(d).
+Inside the box.innerHTML template (after the counts tiles), add:
+
+```html
+      <div class="grp">
+        <div class="grp-title"><span>7-Day Pages / Day</span>
+          <span id="yieldLbl"></span></div>
+        <canvas id="pagesChart" height="120"></canvas>
+      </div>
 ```
-(or click Refresh on the Dashboard)
-Watch the console: printers that respond should print `= Healthy/Low/Critical`
-instead of `= Offline`.
----
-10. Confirm the daily cycle
-The scanner runs once ~5s after boot, then every 24h.
-On-demand LIVE checks work any time via the Toner Center "Check a Printer".
-To change cadence, edit `toner_service.py`:
-SCAN_INTERVAL_SECONDS = 24 * 60 * 60   # e.g. 126060 for twice daily
----
-Rollback (if anything breaks)
-```powershell
-# stop uvicorn (Ctrl+C), then restore backup
-Remove-Item .\app.py, .\toner_service.py
-Copy-Item ..\PrinterAgent_BACKUP_YYYYMMDD\app.py .\app.py
-Copy-Item ..\PrinterAgent_BACKUP_YYYYMMDD\toner_service.py .\toner_service.py
+
+### 4c. After setting box.innerHTML, fetch + draw (needs the printer KEY).
+Add this helper and call it when you have a key:
+
+```javascript
+let pagesChartObj = null;
+
+async function loadPagesTrend(key){
+  if(!key) return;
+  try{
+    const res = await fetch(`/api/page-counts/${encodeURIComponent(key)}?days=7`);
+    const j = await res.json();
+    if(!j.success) return;
+
+    const rows = j.data || [];
+    const labels = rows.map(r => r.date.slice(5));           // MM-DD
+    const mono   = rows.map(r => r.delta_mono ?? 0);
+    const color  = rows.map(r => r.delta_color ?? 0);
+    const total  = rows.map(r => r.delta_total ?? 0);
+
+    // yield label
+    const y = j.yield || {};
+    const yl = document.getElementById("yieldLbl");
+    if(yl && y.pages_on_current_toner != null){
+      yl.textContent = `${Number(y.pages_on_current_toner).toLocaleString()} pages on current toner`;
+    }
+
+    const ctx = document.getElementById("pagesChart");
+    if(!ctx) return;
+    if(pagesChartObj) pagesChartObj.destroy();
+    // Show mono+color stacked if we have them, else just total
+    const haveSplit = mono.some(v=>v>0) || color.some(v=>v>0);
+    pagesChartObj = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: haveSplit ? [
+          {label:"B&W", data:mono, backgroundColor:"#64748b"},
+          {label:"Colour", data:color, backgroundColor:"#0087ff"},
+        ] : [
+          {label:"Pages", data:total, backgroundColor:"#0067b8"},
+        ]
+      },
+      options:{
+        plugins:{legend:{display:haveSplit}},
+        scales:{
+          x:{stacked:haveSplit, grid:{display:false}},
+          y:{stacked:haveSplit, beginAtZero:true}
+        }
+      }
+    });
+  }catch(e){ console.error("pages trend failed", e); }
+}
 ```
+
+### 4d. Call it. Two easy ways:
+
+- If you check via the "Details" button in the attention list, you already
+  have the printer object with a key -> pass it:
+      loadPagesTrend(a.key)   // when building that button's click
+
+- For the manual IP box, resolve the key from /api/manage-printers by IP,
+  then call loadPagesTrend(key). (Optional - the live counts still show
+  without the trend.)
+
 ---
-Common errors -> cause
-Error	Cause	Fix
-ModuleNotFoundError: printers_store	file missing / commented import	step 5
-ModuleNotFoundError: tools	running from C:\PrinterAgent	step 1
-can't open file app.py	wrong folder / file in Downloads	step 1/4
-too many file descriptors in select()	ran with --reload	step 7
-Internal Server Error on /toner	toner_center.html missing	step 3
-Needs Attention empty / all Offline	fleet IPs on old subnet	step 9
+
+## RESULT
+
+Checking a printer now shows:
+  - Total / B&W / Colour tiles (page-counts guide)
+  - A 7-day pages-per-day bar chart (mono vs colour stacked)
+  - "N pages on current toner" yield label
+
+---
+
+## VALIDATED (self-test output)
+
+  7-day pages/day deltas computed correctly (310, 320, ... /day)
+  pages_per_toner detected a refill and counted 730 pages since it.
+
+## CAVEATS
+- Needs >= 2 daily readings before the first delta appears (so the chart
+  fills in over the first couple of days).
+- Yield refill detection uses Black toner % jumping up >= 20 points; if a
+  printer never reports black %, yield falls back to "since monitoring
+  began".
