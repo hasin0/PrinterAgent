@@ -115,7 +115,7 @@ STATIC_DIR = os.path.join(BASE_DIR, "static")
 DRIVERS_DIR = os.path.join(STATIC_DIR, "drivers")
 TOOLS_DIR = os.path.join(STATIC_DIR, "tools")
 DRIVER_FILE_NAME = "sharp_driver.exe"
-SERVER_BASE_URL = "http://172.20.228.49:8000"   # <-- your deployed server IP
+SERVER_BASE_URL = "http://172.16.176.138:8000"   # <-- your deployed server IP
 INSTALLER_DIR = os.path.join(BASE_DIR, "generated_installers")
 
 os.makedirs(INSTALLER_DIR, exist_ok=True)
