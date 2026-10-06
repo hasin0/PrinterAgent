@@ -215,6 +215,27 @@ th {
 }
 tr:hover { background: rgba(0,103,184,.04); }
 
+.sap-summary {
+    display:grid; grid-template-columns:repeat(4, minmax(120px, 1fr));
+    gap:12px; margin: 12px 0 16px;
+}
+.sap-summary .mini {
+    background: var(--bg); border:1px solid var(--border); border-radius:12px;
+    padding:14px 12px; text-align:center; min-height:88px; display:flex;
+    flex-direction:column; justify-content:center; align-items:center;
+}
+.sap-summary .mini .n {
+    font-size: 28px; font-weight: 800; line-height:1.1;
+}
+.sap-summary .mini .l {
+    margin-top:4px; font-size:11px; color:var(--sub); text-transform:uppercase;
+    letter-spacing:.45px;
+}
+.sap-summary .mini .n.ok { color: var(--success); }
+.sap-summary .mini .n.bad { color: var(--error); }
+.sap-summary .mini .n.brand { color: var(--brand); }
+.sap-summary .mini .n.idle { color: var(--purple); }
+
 /* ================================
    BADGES
    ================================ */
@@ -603,8 +624,8 @@ tr:hover { background: rgba(0,103,184,.04); }
         <button onclick="loadSapLog()">🔄 Refresh</button>
         <button onclick="exportSapLog()">⬇ CSV</button>
     </div>
-
-    <div class="table-wrap">
+<!-- 
+    <div class="table-wrap" style="display:none;">
         <table>
             <thead>
                 <tr>
@@ -620,7 +641,7 @@ tr:hover { background: rgba(0,103,184,.04); }
             <tbody id="sapLogBody"></tbody>
         </table>
     </div>
-</div>
+</div> -->
 
 <!-- ================================ INSIGHT PANELS ================================ -->
 <div class="grid cols-3">
